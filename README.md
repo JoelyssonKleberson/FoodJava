@@ -7,11 +7,9 @@
 
 ## 👥 Equipe
 
-| Nome | Matrícula |
-|------|-----------|
-| Integrante 1 | 000000 |
-| Integrante 2 | 000000 |
-| Integrante 3 | 000000 |
+| Nome                               | Matrícula    |
+|------------------------------------|--------------|
+| Joelysson Kleberson Alves Ferreira | 202515020022 |
 
 > ✏️ Atualize esta tabela com os dados reais da equipe.
 
