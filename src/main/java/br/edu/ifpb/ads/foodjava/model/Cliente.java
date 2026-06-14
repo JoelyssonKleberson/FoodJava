@@ -1,6 +1,6 @@
 package br.edu.ifpb.ads.foodjava.model;
 
-public class Cliente extends AbstractUsuario {
+public class Cliente extends Usuario {
 
     private final String cpf;
     private String telefone;
