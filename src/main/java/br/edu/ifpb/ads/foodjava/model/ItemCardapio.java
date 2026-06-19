@@ -2,6 +2,8 @@ package br.edu.ifpb.ads.foodjava.model;
 
 import br.edu.ifpb.ads.foodjava.enums.Categoria;
 
+import java.util.Objects;
+
 public class ItemCardapio {
 
     private String nome;
@@ -62,6 +64,18 @@ public class ItemCardapio {
 
     public void setImagemPath(String imagemPath) {
         this.imagemPath = imagemPath;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        ItemCardapio that = (ItemCardapio) o;
+        return Objects.equals(nome, that.nome);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(nome);
     }
 
     @Override
