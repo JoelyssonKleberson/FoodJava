@@ -3,7 +3,7 @@ package br.edu.ifpb.ads.foodjava.enums;
 public enum Categoria {
 
     ENTRADA("Entrada"),
-    PRATO_PRINCIPAL("Prato Principal"),
+    PRATO_PRINCIPAL("Prato principal"),
     SOBREMESA("Sobremesa"),
     BEBIDAS("Bebidas");
 
