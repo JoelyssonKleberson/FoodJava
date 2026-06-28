@@ -2,13 +2,22 @@ package br.edu.ifpb.ads.foodjava.controller;
 
 import br.edu.ifpb.ads.foodjava.enums.Categoria;
 import br.edu.ifpb.ads.foodjava.enums.StatusPedido;
+import br.edu.ifpb.ads.foodjava.exceptions.ArquivoImportacaoException;
 import br.edu.ifpb.ads.foodjava.exceptions.ItemVinculadoException;
 import br.edu.ifpb.ads.foodjava.exceptions.PrecoInvalidoException;
 import br.edu.ifpb.ads.foodjava.model.ItemCardapio;
 import br.edu.ifpb.ads.foodjava.model.Pedido;
 import br.edu.ifpb.ads.foodjava.repository.CardapioRepository;
 import br.edu.ifpb.ads.foodjava.repository.PedidoRepository;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 
+import java.io.FileReader;
+import java.io.Reader;
+import java.lang.reflect.Type;
 import java.util.List;
 
 public class CardapioController {
@@ -56,5 +65,25 @@ public class CardapioController {
 
     public List<ItemCardapio> listarPorCategoria(Categoria categoria) {
         return cardapioRepository.buscarPorCategoria(categoria);
+    }
+
+    public void importarCardapio(String caminhoArquivo) {
+        try (Reader reader = new FileReader(caminhoArquivo)) {
+            Gson gson = new Gson();
+
+            JsonObject jsonRoot = JsonParser.parseReader(reader).getAsJsonObject();
+            JsonElement arrayCardapio = jsonRoot.get("cardapio");
+
+            Type tipoLista = new TypeToken<List<ItemCardapio>>(){}.getType();
+            List<ItemCardapio> itensImportados = gson.fromJson(arrayCardapio, tipoLista);
+
+            if (itensImportados != null) {
+                for (ItemCardapio item : itensImportados) {
+                    adicionarItem(item.getNome(), item.getDescricao(), item.getPreco(), item.getCategoria(), item.isDisponivel(), item.getImagemPath());
+                }
+            }
+        } catch (Exception e) {
+            throw new ArquivoImportacaoException("Erro ao importar o arquivo de cardápio: " + e.getMessage());
+        }
     }
 }
