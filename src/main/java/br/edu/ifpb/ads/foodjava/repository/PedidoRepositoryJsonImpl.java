@@ -24,6 +24,7 @@ public class PedidoRepositoryJsonImpl implements PedidoRepository {
 
     public PedidoRepositoryJsonImpl() {
         gson = new GsonBuilder()
+                .enableComplexMapKeySerialization()
                 .registerTypeAdapter(LocalDateTime.class, (JsonSerializer<LocalDateTime>) (src, typeOfSrc, context) ->
                         new JsonPrimitive(src.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)))
                 .registerTypeAdapter(LocalDateTime.class, (JsonDeserializer<LocalDateTime>) (json, type, context) ->
