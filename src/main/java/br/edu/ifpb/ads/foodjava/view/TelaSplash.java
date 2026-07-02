@@ -1,83 +1,76 @@
 package br.edu.ifpb.ads.foodjava.view;
 
+import javafx.animation.Animation;
+import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;
+import javafx.animation.ScaleTransition;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.*;
-import javafx.stage.Stage;
+import javafx.scene.layout.StackPane;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.paint.Color;
 import javafx.util.Duration;
-
-import java.io.InputStream;
 
 public class TelaSplash {
 
-    private VBox layout;
-
-    // --- CONFIGURAÇÕES DO DESIGN ---
-    private final String COR_TEXTO = "#ea1d2c"; // Vermelho iFood
-    private final String FRASE_EFEITO = "Preparando a sua fome...";
+    private StackPane layout;
 
     public TelaSplash() {
-        inicializarTela();
-    }
+        layout = new StackPane();
+        layout.setStyle("-fx-background-color: linear-gradient(to bottom, #ea1d2c, #b31622);");
 
-    private void inicializarTela() {
-        layout = new VBox(25); // Aumentei o espaço entre a logo e o texto
-        layout.setAlignment(Pos.CENTER);
-
-        // --- SISTEMA DE BACKGROUND (FUNDO) ---
-        // Ele tenta buscar uma imagem sua chamada fundo_splash.jpg. Se não achar, usa um gradiente moderno.
-        InputStream isFundo = getClass().getResourceAsStream("/images/fundo_splash.jpg");
-        if (isFundo != null) {
-            Image imgFundo = new Image(isFundo);
-            BackgroundImage bImg = new BackgroundImage(imgFundo,
-                    BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT,
-                    BackgroundPosition.CENTER, new BackgroundSize(100, 100, true, true, true, true));
-            layout.setBackground(new Background(bImg));
-        } else {
-            // Fallback: Gradiente cinza muito suave e moderno (estilo fundo de estúdio)
-            layout.setStyle("-fx-background-color: linear-gradient(to bottom right, #ffffff, #efefef);");
-        }
-
-        // --- LOGOTIPO ---
         ImageView imgLogo = new ImageView();
         try {
             Image logo = new Image(getClass().getResourceAsStream("/images/logotipo.png"));
             imgLogo.setImage(logo);
-            imgLogo.setFitWidth(280); // Aumentei um pouco a logo!
+            imgLogo.setFitWidth(500);
             imgLogo.setPreserveRatio(true);
+
+            DropShadow sombraLogo = new DropShadow();
+            sombraLogo.setColor(Color.rgb(0, 0, 0, 0.3));
+            sombraLogo.setRadius(20);
+            sombraLogo.setSpread(0.1);
+            imgLogo.setEffect(sombraLogo);
+
         } catch (Exception e) {
-            System.err.println("Aviso: logotipo.png não encontrada na pasta images.");
+            System.out.println("Logotipo não encontrado.");
         }
 
-        // --- TEXTO E LOADING ---
-        Label lblFrase = new Label(FRASE_EFEITO);
-        lblFrase.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: " + COR_TEXTO + ";");
+        ScaleTransition pulse = new ScaleTransition(Duration.seconds(1.2), imgLogo);
+        pulse.setFromX(1.0);
+        pulse.setFromY(1.0);
+        pulse.setToX(1.05);
+        pulse.setToY(1.05);
+        pulse.setAutoReverse(true);
+        pulse.setCycleCount(Animation.INDEFINITE);
+        pulse.play();
 
         ProgressIndicator loading = new ProgressIndicator();
-        loading.setStyle("-fx-progress-color: " + COR_TEXTO + ";");
-        loading.setMaxSize(50, 50); // Bolinha de carregamento maior
+        loading.setMaxSize(40, 40);
+        loading.setStyle("-fx-progress-color: white;");
+        StackPane.setAlignment(loading, Pos.BOTTOM_CENTER);
+        StackPane.setMargin(loading, new javafx.geometry.Insets(0, 0, 50, 0));
 
-        layout.getChildren().addAll(imgLogo, lblFrase, loading);
+        layout.getChildren().addAll(imgLogo, loading);
+
+        FadeTransition ft = new FadeTransition(Duration.seconds(1.5), layout);
+        ft.setFromValue(0);
+        ft.setToValue(1);
+        ft.play();
     }
 
-    public void iniciarTransicaoParaLogin(Stage stageAtual) {
-        PauseTransition delay = new PauseTransition(Duration.seconds(3));
-
+    public void iniciarTransicaoParaLogin(javafx.stage.Stage stageAtual) {
+        PauseTransition delay = new PauseTransition(Duration.seconds(5));
         delay.setOnFinished(event -> {
             TelaLogin telaLogin = new TelaLogin();
-            Scene cenaLogin = new Scene(telaLogin.getLayout(), 1100, 700);
-            stageAtual.setScene(cenaLogin);
+            stageAtual.setScene(new javafx.scene.Scene(telaLogin.getLayout(), 1100, 700));
         });
-
         delay.play();
     }
 
-    public VBox getLayout() {
+    public StackPane getLayout() {
         return layout;
     }
 }
