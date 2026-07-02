@@ -6,6 +6,7 @@ br\edu\ifpb\ads\foodjava\repository\CardapioRepositoryJsonImpl$1.class
 br\edu\ifpb\ads\foodjava\view\TelaLogin.class
 br\edu\ifpb\ads\foodjava\model\Usuario.class
 br\edu\ifpb\ads\foodjava\repository\UsuarioRepositoryJsonImpl$2.class
+br\edu\ifpb\ads\foodjava\view\TelaSplash.class
 br\edu\ifpb\ads\foodjava\exceptions\DocumentoInvalidoException.class
 br\edu\ifpb\ads\foodjava\exceptions\UsuarioDuplicadoException.class
 br\edu\ifpb\ads\foodjava\model\Cliente.class
