@@ -1,182 +1,124 @@
 package br.edu.ifpb.ads.foodjava.view;
 
 import br.edu.ifpb.ads.foodjava.controller.AutenticacaoController;
+import br.edu.ifpb.ads.foodjava.repository.UsuarioRepository;
 import br.edu.ifpb.ads.foodjava.repository.UsuarioRepositoryJsonImpl;
-import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class TelaCadastrarCliente {
 
-    private final AutenticacaoController authController;
-    private final BorderPane layoutPrincipal;
+    private final String COR_PRINCIPAL = "#ea1d2c";
+    private final String COR_FUNDO = "#fafafa";
+    private final String COR_BOTAO_VOLTAR = "#747d8c";
 
-    private TextField txtNome, txtEmail, txtContato, txtCpf, txtRua, txtNumero, txtBairro, txtCidade, txtCep;
-    private PasswordField txtSenha;
-    private Button btnSalvar, btnVoltar;
+    private AutenticacaoController loginController;
+    private VBox telaPrincipal;
 
     public TelaCadastrarCliente() {
-        this.authController = new AutenticacaoController(new UsuarioRepositoryJsonImpl());
+        // Criando a dependência do Controller também na tela de Cadastro
+        UsuarioRepository repo = new UsuarioRepositoryJsonImpl();
+        this.loginController = new AutenticacaoController(repo);
 
-        // Uso de BorderPane como raiz muda totalmente a estrutura da tela
-        this.layoutPrincipal = new BorderPane();
-        this.layoutPrincipal.setPadding(new Insets(20, 30, 20, 30));
-        this.layoutPrincipal.setStyle("-fx-background-color: #f8f9fa;");
+        telaPrincipal = new VBox(20);
+        telaPrincipal.setAlignment(Pos.CENTER);
+        telaPrincipal.setStyle("-fx-background-color: " + COR_FUNDO + ";");
 
-        inicializarComponentes();
-        montarTela();
-        configurarAcoes();
-    }
+        VBox cartao = new VBox(20);
+        cartao.setAlignment(Pos.TOP_CENTER);
+        cartao.setPadding(new Insets(40));
+        cartao.setMaxWidth(700);
+        cartao.setStyle("-fx-background-color: white; -fx-background-radius: 15px;");
 
-    private void inicializarComponentes() {
-        txtNome = criarTextField("Nome Completo");
-        txtEmail = criarTextField("E-mail válido");
-        txtSenha = new PasswordField();
-        txtSenha.setPromptText("Digite sua senha");
-        txtSenha.setStyle("-fx-background-radius: 5; -fx-padding: 8;");
+        DropShadow sombra = new DropShadow();
+        sombra.setColor(Color.rgb(0, 0, 0, 0.1));
+        sombra.setRadius(15);
+        cartao.setEffect(sombra);
 
-        txtCpf = criarTextField("Apenas números (CPF)");
-        txtContato = criarTextField("Telefone/WhatsApp");
-        txtCep = criarTextField("CEP");
-        txtRua = criarTextField("Rua/Avenida");
-        txtNumero = criarTextField("Número");
-        txtBairro = criarTextField("Bairro");
-        txtCidade = criarTextField("Cidade");
+        Label titulo = new Label("Criar Conta");
+        titulo.setStyle("-fx-text-fill: " + COR_PRINCIPAL + "; -fx-font-size: 28px; -fx-font-weight: bold;");
 
-        btnSalvar = new Button("Concluir Cadastro");
-        btnVoltar = new Button("Voltar");
+        GridPane grid = new GridPane();
+        grid.setHgap(30);
+        grid.setVgap(15);
+        grid.setAlignment(Pos.CENTER);
 
-        String estiloBotao = "-fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 5; -fx-cursor: hand;";
-        btnSalvar.setStyle("-fx-background-color: #e84118; " + estiloBotao); // Tom de laranja diferente
-        btnVoltar.setStyle("-fx-background-color: #2f3640; " + estiloBotao);
-    }
+        String estiloCampo = "-fx-pref-height: 35px; -fx-background-radius: 5px;";
 
-    // Método utilitário para evitar repetição de código (Ganha pontos de Boas Práticas)
-    private TextField criarTextField(String prompt) {
-        TextField tf = new TextField();
-        tf.setPromptText(prompt);
-        tf.setStyle("-fx-background-radius: 5; -fx-padding: 8;");
-        return tf;
-    }
+        TextField txtNome = new TextField(); txtNome.setPromptText("Nome Completo"); txtNome.setStyle(estiloCampo);
+        TextField txtCpf = new TextField(); txtCpf.setPromptText("CPF"); txtCpf.setStyle(estiloCampo);
+        TextField txtTelefone = new TextField(); txtTelefone.setPromptText("Telefone/Celular"); txtTelefone.setStyle(estiloCampo);
 
-    private void montarTela() {
-        Label lblTitulo = new Label("Novo Cliente");
-        lblTitulo.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #e84118;");
-        BorderPane.setAlignment(lblTitulo, Pos.CENTER);
-        BorderPane.setMargin(lblTitulo, new Insets(0, 0, 20, 0));
-        layoutPrincipal.setTop(lblTitulo);
+        TextField txtEmail = new TextField(); txtEmail.setPromptText("E-mail"); txtEmail.setStyle(estiloCampo);
+        PasswordField txtSenha = new PasswordField(); txtSenha.setPromptText("Senha"); txtSenha.setStyle(estiloCampo);
+        TextField txtEndereco = new TextField(); txtEndereco.setPromptText("Endereço Completo"); txtEndereco.setStyle(estiloCampo);
 
-        // O GridPane cria uma tabela invisível que alinha formulários perfeitamente
-        GridPane gridForm = new GridPane();
-        gridForm.setVgap(15);
-        gridForm.setHgap(15);
-        gridForm.setAlignment(Pos.CENTER);
+        grid.add(new Label("Dados Pessoais:"), 0, 0);
+        grid.add(txtNome, 0, 1);
+        grid.add(txtCpf, 0, 2);
+        grid.add(txtTelefone, 0, 3);
 
-        // Coluna Esquerda: Dados Pessoais
-        gridForm.add(new Label("Dados Pessoais"), 0, 0, 2, 1);
+        grid.add(new Label("Acesso e Endereço:"), 1, 0);
+        grid.add(txtEmail, 1, 1);
+        grid.add(txtSenha, 1, 2);
+        grid.add(txtEndereco, 1, 3);
 
-        gridForm.add(new Label("Nome:"), 0, 1);
-        gridForm.add(txtNome, 1, 1);
+        Button btnSalvar = new Button("Confirmar Cadastro");
+        btnSalvar.setStyle("-fx-background-color: " + COR_PRINCIPAL + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-height: 40px; -fx-pref-width: 200px; -fx-background-radius: 8px; -fx-cursor: hand;");
 
-        gridForm.add(new Label("E-mail:"), 0, 2);
-        gridForm.add(txtEmail, 1, 2);
+        Button btnVoltar = new Button("Voltar");
+        btnVoltar.setStyle("-fx-background-color: " + COR_BOTAO_VOLTAR + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-height: 40px; -fx-pref-width: 100px; -fx-background-radius: 8px; -fx-cursor: hand;");
 
-        gridForm.add(new Label("Senha:"), 0, 3);
-        gridForm.add(txtSenha, 1, 3);
+        HBox botoes = new HBox(15, btnVoltar, btnSalvar);
+        botoes.setAlignment(Pos.CENTER);
+        botoes.setPadding(new Insets(20, 0, 0, 0));
 
-        gridForm.add(new Label("CPF:"), 0, 4);
-        gridForm.add(txtCpf, 1, 4);
-
-        gridForm.add(new Label("Contato:"), 0, 5);
-        gridForm.add(txtContato, 1, 5);
-
-        // Coluna Direita: Endereço
-        gridForm.add(new Label("Endereço"), 2, 0, 2, 1);
-
-        gridForm.add(new Label("CEP:"), 2, 1);
-        gridForm.add(txtCep, 3, 1);
-
-        gridForm.add(new Label("Rua:"), 2, 2);
-        gridForm.add(txtRua, 3, 2);
-
-        gridForm.add(new Label("Número:"), 2, 3);
-        gridForm.add(txtNumero, 3, 3);
-
-        gridForm.add(new Label("Bairro:"), 2, 4);
-        gridForm.add(txtBairro, 3, 4);
-
-        gridForm.add(new Label("Cidade:"), 2, 5);
-        gridForm.add(txtCidade, 3, 5);
-
-        // Laço moderno para estilizar labels de forma dinâmica
-        gridForm.getChildren().forEach(node -> {
-            if (node instanceof Label) {
-                Label l = (Label) node;
-                if(l.getText().equals("Dados Pessoais") || l.getText().equals("Endereço")) {
-                    l.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #353b48;");
-                    GridPane.setMargin(l, new Insets(10, 0, 5, 0));
-                } else {
-                    l.setStyle("-fx-font-weight: bold; -fx-text-fill: #7f8fa6;");
-                    GridPane.setHalignment(l, HPos.RIGHT); // Alinha o texto das labels à direita
-                }
-            }
+        // Ações
+        btnVoltar.setOnAction(e -> {
+            Stage stage = (Stage) btnVoltar.getScene().getWindow();
+            TelaLogin telaLogin = new TelaLogin();
+            stage.setScene(new Scene(telaLogin.getLayout(), 1100, 700));
         });
-
-        layoutPrincipal.setCenter(gridForm);
-
-        HBox boxBotoes = new HBox(20, btnVoltar, btnSalvar);
-        boxBotoes.setAlignment(Pos.CENTER);
-        boxBotoes.setPadding(new Insets(30, 0, 10, 0));
-        layoutPrincipal.setBottom(boxBotoes);
-    }
-
-    private void configurarAcoes() {
-        btnVoltar.setOnAction(e -> abrirTelaLogin());
 
         btnSalvar.setOnAction(e -> {
             try {
-                if (txtNome.getText().isBlank() || txtEmail.getText().isBlank() || txtCpf.getText().isBlank()) {
-                    throw new RuntimeException("Preencha todos os campos obrigatórios (Nome, E-mail e CPF).");
-                }
-
-                String enderecoFormatado = String.format("%s, %s - %s, %s. CEP: %s",
-                        txtRua.getText(), txtNumero.getText(), txtBairro.getText(),
-                        txtCidade.getText(), txtCep.getText());
-
-                authController.cadastrarCliente(
+                // Chama o Controller, que cuida das validações (CPF, Senha, Duplicados)
+                loginController.cadastrarCliente(
                         txtNome.getText(), txtEmail.getText(), txtSenha.getText(),
-                        txtCpf.getText(), txtContato.getText(), enderecoFormatado
+                        txtCpf.getText(), txtTelefone.getText(), txtEndereco.getText()
                 );
 
-                exibirMensagem(Alert.AlertType.INFORMATION, "Sucesso", "Cadastro realizado com sucesso!");
-                abrirTelaLogin();
+                // Se não lançou exceção, deu certo!
+                Alert sucesso = new Alert(Alert.AlertType.INFORMATION);
+                sucesso.setTitle("Sucesso!");
+                sucesso.setHeaderText(null);
+                sucesso.setContentText("Conta criada com sucesso! Faça seu login.");
+                sucesso.showAndWait();
 
+                // Volta para o login
+                btnVoltar.fire();
             } catch (Exception ex) {
-                exibirMensagem(Alert.AlertType.ERROR, "Erro", ex.getMessage());
+                Alert erro = new Alert(Alert.AlertType.ERROR);
+                erro.setTitle("Erro no Cadastro");
+                erro.setHeaderText(null);
+                erro.setContentText(ex.getMessage());
+                erro.showAndWait();
             }
         });
+
+        cartao.getChildren().addAll(titulo, grid, botoes);
+        telaPrincipal.getChildren().add(cartao);
     }
 
-    private void abrirTelaLogin() {
-        Stage stage = (Stage) layoutPrincipal.getScene().getWindow();
-        stage.setScene(new Scene(new TelaLogin().getLayout(), 450, 550));
-    }
-
-    private void exibirMensagem(Alert.AlertType tipo, String titulo, String msg) {
-        Alert alerta = new Alert(tipo);
-        alerta.setTitle(titulo);
-        alerta.setHeaderText(null);
-        alerta.setContentText(msg);
-        alerta.showAndWait();
-    }
-
-    public BorderPane getLayout() {
-        return layoutPrincipal;
+    public VBox getLayout() {
+        return telaPrincipal;
     }
 }
