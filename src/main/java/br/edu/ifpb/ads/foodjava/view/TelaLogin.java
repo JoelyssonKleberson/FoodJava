@@ -9,7 +9,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -18,10 +17,9 @@ import java.io.InputStream;
 
 public class TelaLogin {
 
-    // --- VARIÁVEIS DE DESIGN ---
-    private final String COR_PRINCIPAL = "#ea1d2c";
-    private final String COR_FUNDO = "#f4f4f4";
-    private final String COR_BOTAO_SEC = "#747d8c";
+    // Cores alinhadas ao seu novo pedido
+    private final String COR_VERMELHO = "#ea1d2c";
+    private final String COR_AZUL_LINK = "#0984e3"; // Azul link clássico e chamativo
 
     private AutenticacaoController loginController;
     private HBox telaPrincipal;
@@ -31,92 +29,67 @@ public class TelaLogin {
         this.loginController = new AutenticacaoController(repo);
 
         telaPrincipal = new HBox();
-        telaPrincipal.setStyle("-fx-background-color: " + COR_FUNDO + ";");
         telaPrincipal.setAlignment(Pos.CENTER);
 
-        // ==========================================
-        // LADO ESQUERDO (Logo com Fundo Personalizado)
-        // ==========================================
-        VBox ladoEsquerdo = new VBox();
-        ladoEsquerdo.setAlignment(Pos.CENTER);
-        ladoEsquerdo.setPrefWidth(550);
+        // LADO ESQUERDO: Imagem
+        StackPane painelImagemEsquerdo = new StackPane();
+        painelImagemEsquerdo.setPrefWidth(660);
+        painelImagemEsquerdo.setMinWidth(660);
+        painelImagemEsquerdo.setMaxWidth(660);
 
-        // Tentando aplicar uma imagem de fundo (entregador/comida) atrás da logo
-        InputStream isFundo = getClass().getResourceAsStream("/images/fundo_login.jpg");
-        if (isFundo != null) {
-            Image imgFundo = new Image(isFundo);
-            BackgroundImage bImg = new BackgroundImage(imgFundo,
-                    BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT,
-                    BackgroundPosition.CENTER, new BackgroundSize(100, 100, true, true, true, true));
-            ladoEsquerdo.setBackground(new Background(bImg));
+        InputStream streamFundo = getClass().getResourceAsStream("/images/fundo_login.jpg");
+        if (streamFundo != null) {
+            Image imgFundo = new Image(streamFundo);
+            BackgroundImage bImg = new BackgroundImage(imgFundo, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, new BackgroundSize(BackgroundSize.AUTO, BackgroundSize.AUTO, false, false, false, true));
+            painelImagemEsquerdo.setBackground(new Background(bImg));
         } else {
-            // Se não tiver imagem, aplica um degradê vermelho lindíssimo estilo iFood
-            ladoEsquerdo.setStyle("-fx-background-color: linear-gradient(to bottom right, #ea1d2c, #ff5e62);");
+            painelImagemEsquerdo.setStyle("-fx-background-color: #cccccc;");
         }
 
-        // A logo grandona
-        ImageView imgLogo = new ImageView();
-        try {
-            Image logo = new Image(getClass().getResourceAsStream("/images/logotipo.png"));
-            imgLogo.setImage(logo);
-            imgLogo.setFitWidth(350); // Aumentado!
-            imgLogo.setPreserveRatio(true);
-        } catch (Exception e) {
-            System.err.println("Aviso: logotipo.png não encontrada.");
-        }
+        // LADO DIREITO: Fundo Vermelho e Cartão
+        VBox painelFormularioDireito = new VBox();
+        painelFormularioDireito.setAlignment(Pos.CENTER);
+        painelFormularioDireito.setPrefWidth(440);
+        painelFormularioDireito.setMinWidth(440);
+        painelFormularioDireito.setMaxWidth(440);
+        // Alterado para Vermelho, igual ao splash e cadastro!
+        painelFormularioDireito.setStyle("-fx-background-color: " + COR_VERMELHO + ";");
 
-        // Efeito de sombra leve apenas na logo para destacá-class do fundo
-        DropShadow sombraLogo = new DropShadow();
-        sombraLogo.setColor(Color.rgb(0, 0, 0, 0.3));
-        sombraLogo.setRadius(20);
-        imgLogo.setEffect(sombraLogo);
-
-        ladoEsquerdo.getChildren().add(imgLogo);
-
-        // ==========================================
-        // LADO DIREITO (Formulário Branco Aumentado)
-        // ==========================================
-        VBox ladoDireito = new VBox(20);
-        ladoDireito.setAlignment(Pos.CENTER);
-        ladoDireito.setPrefWidth(550);
-
-        VBox cartaoLogin = new VBox(20); // Espaçamento interno maior
+        VBox cartaoLogin = new VBox(22);
         cartaoLogin.setAlignment(Pos.TOP_CENTER);
-        cartaoLogin.setPadding(new Insets(50)); // Margens aumentadas
-        cartaoLogin.setMaxWidth(450); // CARTÃO MAIS LARGO (era 350)
-        cartaoLogin.setStyle("-fx-background-color: white; -fx-background-radius: 15px;");
+        cartaoLogin.setPadding(new Insets(45, 35, 45, 35));
+        cartaoLogin.setMaxWidth(380);
+        cartaoLogin.setStyle("-fx-background-color: #ffffff; -fx-background-radius: 16px;");
 
-        DropShadow sombraCartao = new DropShadow();
-        sombraCartao.setColor(Color.rgb(0, 0, 0, 0.1));
-        sombraCartao.setRadius(20);
-        cartaoLogin.setEffect(sombraCartao);
+        DropShadow sombraPerimetro = new DropShadow();
+        sombraPerimetro.setColor(Color.rgb(0, 0, 0, 0.25)); // Sombra um pouco mais forte para destacar no vermelho
+        sombraPerimetro.setRadius(25);
+        cartaoLogin.setEffect(sombraPerimetro);
 
-        Label titulo = new Label("Bem-vindo!");
-        titulo.setStyle("-fx-text-fill: " + COR_PRINCIPAL + "; -fx-font-size: 34px; -fx-font-weight: bold;"); // Fonte maior
+        Label titulo = new Label("Acessar Conta");
+        titulo.setStyle("-fx-text-fill: #2c3e50; -fx-font-size: 28px; -fx-font-weight: bold;");
 
-        Label subtitulo = new Label("Faça login para continuar");
-        subtitulo.setStyle("-fx-font-size: 16px; -fx-text-fill: #666666;");
+        Label subtitulo = new Label("Digite suas credenciais abaixo");
+        subtitulo.setStyle("-fx-font-size: 14px; -fx-text-fill: #7f8c8d;");
 
-        // Estilo compartilhado para os campos de texto (Mais altos e confortáveis)
-        String estiloCampo = "-fx-pref-height: 50px; -fx-background-radius: 8px; -fx-font-size: 16px; -fx-border-color: #e0e0e0; -fx-border-radius: 8px; -fx-background-color: #fafafa;";
+        String estiloCampo = "-fx-pref-height: 48px; -fx-background-radius: 8px; -fx-font-size: 15px; -fx-border-color: #e2e8f0; -fx-border-radius: 8px; -fx-background-color: #f8fafc;";
 
         TextField txtEmail = new TextField();
-        txtEmail.setPromptText("Digite seu e-mail");
+        txtEmail.setPromptText("E-mail corporativo ou pessoal");
         txtEmail.setStyle(estiloCampo);
 
         PasswordField txtSenha = new PasswordField();
-        txtSenha.setPromptText("Sua senha secreta");
+        txtSenha.setPromptText("Sua senha cadastrada");
         txtSenha.setStyle(estiloCampo);
 
-        Button btnEntrar = new Button("Acessar Conta");
+        Button btnEntrar = new Button("Entrar");
         btnEntrar.setPrefWidth(Double.MAX_VALUE);
-        // Botão mais alto e com fonte maior
-        btnEntrar.setStyle("-fx-background-color: " + COR_PRINCIPAL + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-height: 50px; -fx-background-radius: 8px; -fx-font-size: 18px; -fx-cursor: hand;");
+        btnEntrar.setStyle("-fx-background-color: " + COR_VERMELHO + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-height: 48px; -fx-background-radius: 8px; -fx-font-size: 16px; -fx-cursor: hand;");
 
-        Button btnCadastrar = new Button("Novo por aqui? Crie sua conta");
-        btnCadastrar.setStyle("-fx-background-color: transparent; -fx-text-fill: " + COR_BOTAO_SEC + "; -fx-font-size: 15px; -fx-cursor: hand;");
+        Button btnCadastrar = new Button("Ainda não tem conta? Cadastre-se");
+        // Cor do link alterada para azul conforme solicitado
+        btnCadastrar.setStyle("-fx-background-color: transparent; -fx-text-fill: " + COR_AZUL_LINK + "; -fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand;");
 
-        // Ações dos Botões
         btnCadastrar.setOnAction(e -> {
             Stage stage = (Stage) btnCadastrar.getScene().getWindow();
             TelaCadastrarCliente telaCad = new TelaCadastrarCliente();
@@ -129,18 +102,18 @@ public class TelaLogin {
             try {
                 var usuarioEncontrado = loginController.fazerLogin(email, senha);
                 if (usuarioEncontrado != null) {
-                    System.out.println("Login de sucesso para: " + usuarioEncontrado.getNome());
+                    System.out.println("Login efetuado com sucesso!");
                 } else {
                     mostrarAlerta("Erro", "E-mail ou senha incorretos.");
                 }
             } catch (Exception ex) {
-                mostrarAlerta("Erro no Login", ex.getMessage());
+                mostrarAlerta("Erro", ex.getMessage());
             }
         });
 
         cartaoLogin.getChildren().addAll(titulo, subtitulo, txtEmail, txtSenha, btnEntrar, btnCadastrar);
-        ladoDireito.getChildren().add(cartaoLogin);
-        telaPrincipal.getChildren().addAll(ladoEsquerdo, ladoDireito);
+        painelFormularioDireito.getChildren().add(cartaoLogin);
+        telaPrincipal.getChildren().addAll(painelImagemEsquerdo, painelFormularioDireito);
     }
 
     private void mostrarAlerta(String titulo, String mensagem) {
