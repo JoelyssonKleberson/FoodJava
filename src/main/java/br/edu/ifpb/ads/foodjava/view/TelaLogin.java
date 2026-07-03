@@ -17,9 +17,8 @@ import java.io.InputStream;
 
 public class TelaLogin {
 
-    // Cores alinhadas ao seu novo pedido
     private final String COR_VERMELHO = "#ea1d2c";
-    private final String COR_AZUL_LINK = "#0984e3"; // Azul link clássico e chamativo
+    private final String COR_AZUL_LINK = "#0984e3";
 
     private AutenticacaoController loginController;
     private HBox telaPrincipal;
@@ -52,7 +51,6 @@ public class TelaLogin {
         painelFormularioDireito.setPrefWidth(440);
         painelFormularioDireito.setMinWidth(440);
         painelFormularioDireito.setMaxWidth(440);
-        // Alterado para Vermelho, igual ao splash e cadastro!
         painelFormularioDireito.setStyle("-fx-background-color: " + COR_VERMELHO + ";");
 
         VBox cartaoLogin = new VBox(22);
@@ -62,32 +60,60 @@ public class TelaLogin {
         cartaoLogin.setStyle("-fx-background-color: #ffffff; -fx-background-radius: 16px;");
 
         DropShadow sombraPerimetro = new DropShadow();
-        sombraPerimetro.setColor(Color.rgb(0, 0, 0, 0.25)); // Sombra um pouco mais forte para destacar no vermelho
+        sombraPerimetro.setColor(Color.rgb(0, 0, 0, 0.25));
         sombraPerimetro.setRadius(25);
         cartaoLogin.setEffect(sombraPerimetro);
 
         Label titulo = new Label("Acessar Conta");
         titulo.setStyle("-fx-text-fill: #2c3e50; -fx-font-size: 28px; -fx-font-weight: bold;");
 
+        // 1) MELHORIA: Subtítulo mais nítido e visível (Cor mais escura e negrito leve)
         Label subtitulo = new Label("Digite suas credenciais abaixo");
-        subtitulo.setStyle("-fx-font-size: 14px; -fx-text-fill: #7f8c8d;");
+        subtitulo.setStyle("-fx-font-size: 14px; -fx-text-fill: #34495e; -fx-font-weight: bold;");
 
         String estiloCampo = "-fx-pref-height: 48px; -fx-background-radius: 8px; -fx-font-size: 15px; -fx-border-color: #e2e8f0; -fx-border-radius: 8px; -fx-background-color: #f8fafc;";
+
+        // Estilo especial para a senha, com espaço extra na direita para o botão do olho não ficar em cima do texto
+        String estiloCampoSenha = estiloCampo + " -fx-padding: 0 40 0 10;";
 
         TextField txtEmail = new TextField();
         txtEmail.setPromptText("E-mail corporativo ou pessoal");
         txtEmail.setStyle(estiloCampo);
 
-        PasswordField txtSenha = new PasswordField();
-        txtSenha.setPromptText("Sua senha cadastrada");
-        txtSenha.setStyle(estiloCampo);
+        // 2) MELHORIA: Sistema de "Mostrar Senha"
+        PasswordField txtSenhaOculta = new PasswordField();
+        txtSenhaOculta.setPromptText("Sua senha cadastrada");
+        txtSenhaOculta.setStyle(estiloCampoSenha);
+
+        TextField txtSenhaVisivel = new TextField();
+        txtSenhaVisivel.setPromptText("Sua senha cadastrada");
+        txtSenhaVisivel.setStyle(estiloCampoSenha);
+        txtSenhaVisivel.setVisible(false); // Começa escondido
+
+        // Sincroniza o texto digitado entre o campo oculto e o visível
+        txtSenhaVisivel.textProperty().bindBidirectional(txtSenhaOculta.textProperty());
+
+        Button btnOlho = new Button("👁");
+        btnOlho.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 16px; -fx-text-fill: #7f8c8d;");
+
+        btnOlho.setOnAction(e -> {
+            boolean isVisivel = txtSenhaVisivel.isVisible();
+            txtSenhaVisivel.setVisible(!isVisivel);
+            txtSenhaOculta.setVisible(isVisivel);
+            // Troca o ícone (Olho aberto / Macaquinho cobrindo o rosto ou olho cortado)
+            btnOlho.setText(isVisivel ? "👁" : "🙈");
+        });
+
+        // Empilha o campo oculto, o visível e o botão do olho por cima de tudo à direita
+        StackPane stackSenha = new StackPane(txtSenhaVisivel, txtSenhaOculta, btnOlho);
+        StackPane.setAlignment(btnOlho, Pos.CENTER_RIGHT);
+        StackPane.setMargin(btnOlho, new Insets(0, 5, 0, 0));
 
         Button btnEntrar = new Button("Entrar");
         btnEntrar.setPrefWidth(Double.MAX_VALUE);
         btnEntrar.setStyle("-fx-background-color: " + COR_VERMELHO + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-height: 48px; -fx-background-radius: 8px; -fx-font-size: 16px; -fx-cursor: hand;");
 
         Button btnCadastrar = new Button("Ainda não tem conta? Cadastre-se");
-        // Cor do link alterada para azul conforme solicitado
         btnCadastrar.setStyle("-fx-background-color: transparent; -fx-text-fill: " + COR_AZUL_LINK + "; -fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand;");
 
         btnCadastrar.setOnAction(e -> {
@@ -98,7 +124,7 @@ public class TelaLogin {
 
         btnEntrar.setOnAction(e -> {
             String email = txtEmail.getText();
-            String senha = txtSenha.getText();
+            String senha = txtSenhaOculta.getText();
             try {
                 var usuarioEncontrado = loginController.fazerLogin(email, senha);
                 if (usuarioEncontrado != null) {
@@ -111,7 +137,7 @@ public class TelaLogin {
             }
         });
 
-        cartaoLogin.getChildren().addAll(titulo, subtitulo, txtEmail, txtSenha, btnEntrar, btnCadastrar);
+        cartaoLogin.getChildren().addAll(titulo, subtitulo, txtEmail, stackSenha, btnEntrar, btnCadastrar);
         painelFormularioDireito.getChildren().add(cartaoLogin);
         telaPrincipal.getChildren().addAll(painelImagemEsquerdo, painelFormularioDireito);
     }
