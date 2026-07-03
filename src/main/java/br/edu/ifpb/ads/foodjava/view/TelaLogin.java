@@ -128,12 +128,23 @@ public class TelaLogin {
             try {
                 var usuarioEncontrado = loginController.fazerLogin(email, senha);
                 if (usuarioEncontrado != null) {
-                    System.out.println("Login efetuado com sucesso!");
+
+                    // CORREÇÃO: Exibindo um pop-up visual já que não temos a próxima tela!
+                    Alert sucesso = new Alert(Alert.AlertType.INFORMATION);
+                    sucesso.setTitle("Acesso Permitido");
+                    sucesso.setHeaderText(null);
+                    sucesso.setContentText("Login efetuado com sucesso!\n\nBem-vindo(a), " + usuarioEncontrado.getNome() + "!");
+                    sucesso.showAndWait();
+
+                    System.out.println("Login efetuado com sucesso no console!");
+
+                    // NO FUTURO: Aqui chamaremos a Tela do Cardápio!
+
                 } else {
-                    mostrarAlerta("Erro", "E-mail ou senha incorretos.");
+                    mostrarAlerta("Credenciais Inválidas", "Verifique se digitou o e-mail e senha corretamente.");
                 }
             } catch (Exception ex) {
-                mostrarAlerta("Erro", ex.getMessage());
+                mostrarAlerta("Erro de Conexão", ex.getMessage());
             }
         });
 
