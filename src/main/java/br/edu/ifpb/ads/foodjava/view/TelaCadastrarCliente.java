@@ -325,7 +325,10 @@ public class TelaCadastrarCliente {
             sucesso.setContentText("Conta criada com sucesso! Faça seu login.");
             sucesso.showAndWait();
 
-            btnVoltar.fire();
+            // CORREÇÃO: Forçando a transição direta para a Tela de Login
+            Stage stage = (Stage) btnProximo.getScene().getWindow();
+            stage.setScene(new Scene(new TelaLogin().getLayout(), 1100, 700));
+
         } catch (Exception ex) {
             Alert erro = new Alert(Alert.AlertType.ERROR);
             erro.setTitle("Erro no Cadastro");
