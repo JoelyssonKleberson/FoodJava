@@ -25,17 +25,18 @@ public class TelaConfiguracaoRestaurante {
 
     private RestauranteController restauranteController;
     private VBox telaPrincipal;
-    private VBox cartao; // O cartão branco onde tudo acontece
+    private VBox cartao;
 
     private int passoAtual = 1;
     private VBox passo1Box, passo2Box, passo3Box;
     private ProgressBar progressBar;
     private Label lblEtapa;
-    private Button btnProximo;
+    private Button btnProximo, btnVoltar;
 
     // Campos
     private TextField txtNomeRestaurante, txtCnpj, txtWhatsApp, txtRua, txtNumero, txtBairro, txtEmail;
     private ComboBox<String> cbCategoria;
+    private TextField txtCategoriaOutros; // Novo campo para "Outros"
     private PasswordField txtSenhaOculta;
     private TextField txtSenhaVisivel;
 
@@ -59,7 +60,6 @@ public class TelaConfiguracaoRestaurante {
         sombra.setRadius(25);
         cartao.setEffect(sombra);
 
-        // Logo muito maior no topo
         ImageView imgLogo = new ImageView();
         try {
             Image logo = new Image(getClass().getResourceAsStream("/images/logotipo.png"));
@@ -90,9 +90,24 @@ public class TelaConfiguracaoRestaurante {
         boxProgresso.setAlignment(Pos.CENTER);
         boxProgresso.setPadding(new Insets(10, 0, 5, 0));
 
+        // IMPLEMENTAÇÃO DO BOTÃO VOLTAR
+        btnVoltar = new Button("Voltar");
+        btnVoltar.setStyle("-fx-background-color: transparent; -fx-text-fill: #7f8c8d; -fx-font-weight: bold; -fx-cursor: hand; -fx-font-size: 15px;");
+
         btnProximo = new Button("Próximo ➔");
-        btnProximo.setPrefWidth(Double.MAX_VALUE); // Botão ocupando a largura igual no login
+        btnProximo.setPrefWidth(140);
         btnProximo.setPrefHeight(45);
+
+        HBox boxBotoes = new HBox(150, btnVoltar, btnProximo);
+        boxBotoes.setAlignment(Pos.CENTER);
+        boxBotoes.setPadding(new Insets(10, 0, 0, 0));
+
+        btnVoltar.setOnAction(e -> {
+            if (passoAtual > 1) {
+                passoAtual--;
+                atualizarVisaoDoWizard();
+            }
+        });
 
         btnProximo.setOnAction(e -> {
             if (passoAtual < 3) {
@@ -103,7 +118,7 @@ public class TelaConfiguracaoRestaurante {
             }
         });
 
-        cartao.getChildren().addAll(imgLogo, titulo, subtitulo, passo1Box, passo2Box, passo3Box, boxProgresso, btnProximo);
+        cartao.getChildren().addAll(imgLogo, titulo, subtitulo, passo1Box, passo2Box, passo3Box, boxProgresso, boxBotoes);
         telaPrincipal.getChildren().add(cartao);
 
         atualizarVisaoDoWizard();
@@ -112,7 +127,7 @@ public class TelaConfiguracaoRestaurante {
     private void criarPasso1() {
         passo1Box = new VBox(10);
         Label lblSecao = new Label("Dados do Restaurante");
-        lblSecao.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"); // Maior e Preto
+        lblSecao.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
 
         txtNomeRestaurante = criarCampoTexto("Nome do restaurante", "Ex.: Restaurante FoodJava");
         txtCnpj = criarCampoTexto("CNPJ", "00.000.000/0000-00");
@@ -122,6 +137,18 @@ public class TelaConfiguracaoRestaurante {
         cbCategoria.setPromptText("Selecione a Categoria");
         cbCategoria.setStyle("-fx-pref-height: 45px; -fx-background-radius: 5px; -fx-font-size: 15px; -fx-border-color: #e0e0e0; -fx-border-radius: 5px;");
         cbCategoria.setMaxWidth(Double.MAX_VALUE);
+
+        // IMPLEMENTAÇÃO: Campo dinâmico para categoria "Outros"
+        txtCategoriaOutros = criarCampoTexto("Qual categoria?", "Ex: Italiana");
+        txtCategoriaOutros.setVisible(false);
+        txtCategoriaOutros.setManaged(false); // Remove do layout se invisível
+
+        cbCategoria.valueProperty().addListener((obs, oldV, newV) -> {
+            boolean isOutros = "Outros".equals(newV);
+            txtCategoriaOutros.setVisible(isOutros);
+            txtCategoriaOutros.setManaged(isOutros);
+            validarPassoAtual();
+        });
 
         // Máscara CNPJ
         txtCnpj.textProperty().addListener((obs, oldVal, newVal) -> {
@@ -143,9 +170,9 @@ public class TelaConfiguracaoRestaurante {
         });
 
         txtNomeRestaurante.textProperty().addListener((obs, o, n) -> validarPassoAtual());
-        cbCategoria.valueProperty().addListener((obs, o, n) -> validarPassoAtual());
+        txtCategoriaOutros.textProperty().addListener((obs, o, n) -> validarPassoAtual());
 
-        passo1Box.getChildren().addAll(lblSecao, new Label("Nome"), txtNomeRestaurante, new Label("CNPJ"), txtCnpj, new Label("Categoria"), cbCategoria);
+        passo1Box.getChildren().addAll(lblSecao, new Label("Nome"), txtNomeRestaurante, new Label("CNPJ"), txtCnpj, new Label("Categoria"), cbCategoria, txtCategoriaOutros);
     }
 
     private void criarPasso2() {
@@ -233,6 +260,9 @@ public class TelaConfiguracaoRestaurante {
         lblEtapa.setText("Etapa " + passoAtual + " de 3");
         progressBar.setProgress(passoAtual / 3.0);
 
+        // Oculta o botão voltar se estiver na primeira etapa
+        btnVoltar.setVisible(passoAtual > 1);
+
         if (passoAtual == 3) {
             btnProximo.setText("Salvar e Iniciar");
         } else {
@@ -247,11 +277,17 @@ public class TelaConfiguracaoRestaurante {
         if (passoAtual == 1) {
             boolean nomeOk = !txtNomeRestaurante.getText().trim().isEmpty();
             boolean cnpjOk = ValidadorUtil.isCnpjValido(txtCnpj.getText());
-            boolean catOk = cbCategoria.getValue() != null;
+
+            // Valida se selecionou a combo, e se selecionou "Outros", o campo texto não pode ser vazio
+            boolean catOk = cbCategoria.getValue() != null &&
+                    (!"Outros".equals(cbCategoria.getValue()) || !txtCategoriaOutros.getText().trim().isEmpty());
+
             marcarCampoVisual(txtNomeRestaurante, nomeOk);
             marcarCampoVisual(txtCnpj, cnpjOk);
+
             if (catOk) cbCategoria.setStyle("-fx-pref-height: 45px; -fx-background-radius: 5px; -fx-font-size: 15px; -fx-border-color: #2ecc71; -fx-border-radius: 5px; -fx-border-width: 2px;");
             else cbCategoria.setStyle("-fx-pref-height: 45px; -fx-background-radius: 5px; -fx-font-size: 15px; -fx-border-color: #e0e0e0; -fx-border-radius: 5px;");
+
             valido = nomeOk && cnpjOk && catOk;
         }
         else if (passoAtual == 2) {
@@ -311,15 +347,20 @@ public class TelaConfiguracaoRestaurante {
             String cnpjLimpo = txtCnpj.getText().replaceAll("\\D", "");
             String endereco = txtRua.getText() + ", " + txtNumero.getText() + " - " + txtBairro.getText();
 
+            // Pega a categoria (Se for "Outros", usa o texto digitado)
+            String categoriaEscolhida = cbCategoria.getValue();
+            if ("Outros".equals(categoriaEscolhida)) {
+                categoriaEscolhida = txtCategoriaOutros.getText().trim();
+            }
+
             restauranteController.configurarRestaurante(
                     txtNomeRestaurante.getText(), cnpjLimpo, endereco, txtWhatsApp.getText(),
-                    cbCategoria.getValue(), txtEmail.getText(), txtSenhaOculta.getText()
+                    categoriaEscolhida, txtEmail.getText(), txtSenhaOculta.getText()
             );
 
             mostrarTelaSucessoEvoltarParaLogin();
 
         } catch (Exception ex) {
-            // Em caso de erro de banco, mostraremos um alerta comum mesmo
             Alert erro = new Alert(Alert.AlertType.ERROR);
             erro.setTitle("Erro");
             erro.setContentText(ex.getMessage());
@@ -327,9 +368,8 @@ public class TelaConfiguracaoRestaurante {
         }
     }
 
-    // O Sistema Elegante de Transição (Fim das janelinhas feias do Windows!)
     private void mostrarTelaSucessoEvoltarParaLogin() {
-        cartao.getChildren().clear(); // Limpa o formulário do cartão
+        cartao.getChildren().clear();
 
         Label check = new Label("✔️");
         check.setStyle("-fx-font-size: 60px; -fx-text-fill: #2ecc71;");
@@ -343,7 +383,6 @@ public class TelaConfiguracaoRestaurante {
         cartao.getChildren().addAll(check, lblSucesso, lblMsg);
         cartao.setAlignment(Pos.CENTER);
 
-        // Espera 2.5 segundos e vai para o Login sozinho
         PauseTransition delay = new PauseTransition(Duration.seconds(2.5));
         delay.setOnFinished(e -> {
             Stage stage = (Stage) telaPrincipal.getScene().getWindow();
