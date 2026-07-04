@@ -9,23 +9,17 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage stage) {
-        // 1. Instancia a tela de Splash
+        // Agora o MainApp SEMPRE abre o Splash primeiro, mantendo a imersão do usuário
         TelaSplash splashView = new TelaSplash();
-
-        // 2. Cria a cena principal com a resolução travada
         Scene cenaInicial = new Scene(splashView.getLayout(), 1100, 700);
 
-        // 3. Configuração do Stage (Janela)
-        stage.setTitle("FoodJava");
+        stage.setTitle("FoodJava - Sistema de Pedidos");
         stage.setScene(cenaInicial);
-
-        // Trava o redimensionamento para manter o layout perfeito e igual à referência
         stage.setResizable(false);
-
         stage.show();
 
-        // 4. Inicia a transição de carregamento
-        splashView.iniciarTransicaoParaLogin(stage);
+        // A lógica de roteamento agora fica dentro do Splash
+        splashView.iniciarTransicaoEroteamento(stage);
     }
 
     public static void main(String[] args) {
