@@ -6,8 +6,6 @@ public final class ValidadorUtil {
 
     private ValidadorUtil() {}
 
-    // --- MÉTODOS DE VALIDAÇÃO (Lançam Exceções para o Back-end) ---
-
     public static void validarCpf(String cpf) throws DocumentoInvalidoException {
         if (!calculoValidacaoCpf(cpf)) {
             throw new DocumentoInvalidoException("CPF Inválido!");
@@ -20,24 +18,19 @@ public final class ValidadorUtil {
         }
     }
 
-    // --- MÉTODOS PARA O FRONT-END (Validação em Tempo Real) ---
-
     public static boolean isEmailGmailValido(String email) {
         if (email == null) return false;
-        // Aceita letras, números, pontos e traços, obrigatoriamente terminando em @gmail.com (tamanho min 6)
         return email.matches("^[a-zA-Z0-9.-]{6,30}@gmail\\.com$");
     }
 
     public static boolean isNomeCompleto(String nome) {
         if (nome == null || nome.trim().isEmpty()) return false;
         String[] partes = nome.trim().split("\\s+");
-        // Verifica se tem pelo menos duas palavras e se ambas têm pelo menos 2 letras
         return partes.length >= 2 && partes[0].length() >= 2 && partes[1].length() >= 2;
     }
 
     public static boolean isTelefoneWhatsAppValido(String telefone) {
         if (telefone == null) return false;
-        // Deve seguir exatamente a máscara (XX) XXXXX-XXXX
         return telefone.matches("^\\(\\d{2}\\) \\d{5}-\\d{4}$");
     }
 
@@ -45,33 +38,33 @@ public final class ValidadorUtil {
         return calculoValidacaoCpf(cpf);
     }
 
+    // NOVO: Adicionado para o Wizard do Restaurante
+    public static boolean isCnpjValido(String cnpj) {
+        return calculoValidacaoCnpj(cnpj);
+    }
+
     public static boolean isSenhaValida(String senha) {
         if (senha == null) return false;
-        // Mínimo 8 caracteres, pelo menos 1 número (Conforme sua regra do SenhaUtil)
         return senha.length() >= 8 && senha.matches(".*\\d.*");
     }
 
     private static boolean calculoValidacaoCpf(String cpf) {
         if (cpf == null) return false;
-
         cpf = cpf.replaceAll("\\D", "");
         if (cpf.length() != 11 || cpf.matches("(\\d)\\1{10}")) return false;
 
         int digito1 = calcularDigito(cpf.substring(0, 9), new int[]{10, 9, 8, 7, 6, 5, 4, 3, 2});
         int digito2 = calcularDigito(cpf.substring(0, 9) + digito1, new int[]{11, 10, 9, 8, 7, 6, 5, 4, 3, 2});
-
         return cpf.equals(cpf.substring(0, 9) + digito1 + digito2);
     }
 
     private static boolean calculoValidacaoCnpj(String cnpj) {
         if (cnpj == null) return false;
-
         cnpj = cnpj.replaceAll("\\D", "");
         if (cnpj.length() != 14 || cnpj.matches("(\\d)\\1{13}")) return false;
 
         int digito1 = calcularDigito(cnpj.substring(0, 12), new int[]{5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2});
         int digito2 = calcularDigito(cnpj.substring(0, 12) + digito1, new int[]{6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2});
-
         return cnpj.equals(cnpj.substring(0, 12) + digito1 + digito2);
     }
 
@@ -81,7 +74,6 @@ public final class ValidadorUtil {
             soma += Character.getNumericValue(str.charAt(i)) * pesos[i];
         }
         int resto = soma % 11;
-
         return (resto < 2) ? 0 : (11 - resto);
     }
 }
