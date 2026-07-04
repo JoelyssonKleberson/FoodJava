@@ -156,7 +156,7 @@ public class TelaLogin {
         cartaoLogin.getChildren().addAll(check, lblSucesso, lblMsg);
         cartaoLogin.setAlignment(Pos.CENTER);
 
-        // Espera 1.5s e manda para a Home certa
+        // Espera 3s e manda para a Home certa
         PauseTransition delay = new PauseTransition(Duration.seconds(3));
         delay.setOnFinished(e -> {
             Stage stage = (Stage) telaPrincipal.getScene().getWindow();
