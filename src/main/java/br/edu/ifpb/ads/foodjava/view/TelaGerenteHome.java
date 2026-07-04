@@ -9,14 +9,16 @@ import br.edu.ifpb.ads.foodjava.repository.PedidoRepository;
 import br.edu.ifpb.ads.foodjava.repository.PedidoRepositoryJsonImpl;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 
 public class TelaGerenteHome {
 
-    private final String COR_SIDEBAR = "#2c3e50"; // Azul escuro / Chumbo profundo
+    private final String COR_SIDEBAR = "#2c3e50";
     private final String COR_VERMELHO = "#ea1d2c";
     private final String COR_FUNDO = "#f4f4f4";
 
@@ -27,18 +29,15 @@ public class TelaGerenteHome {
     public TelaGerenteHome(Usuario gerenteLogado) {
         this.gerenteLogado = gerenteLogado;
 
-        // CORREÇÃO APLICADA: Instanciando AMBOS os repositórios exigidos pelo seu Controller
         CardapioRepository repoCardapio = new CardapioRepositoryJsonImpl();
         PedidoRepository repoPedido = new PedidoRepositoryJsonImpl();
-
         this.cardapioController = new CardapioController(repoCardapio, repoPedido);
 
         telaPrincipal = new BorderPane();
         telaPrincipal.setStyle("-fx-background-color: " + COR_FUNDO + ";");
 
-        // Montagem do Layout
         telaPrincipal.setLeft(criarSidebar());
-        telaPrincipal.setCenter(criarAbaCardapio()); // Inicia na aba de gerenciar cardápio
+        telaPrincipal.setCenter(criarAbaCardapio());
     }
 
     // ==========================================
@@ -59,18 +58,34 @@ public class TelaGerenteHome {
         VBox boxHeader = new VBox(5, lblAdmin, lblNomeGerente);
         boxHeader.setPadding(new Insets(0, 0, 30, 0));
 
-        // Botões de Navegação
         Button btnPedidos = criarBotaoSidebar("📋 Pedidos do Dia");
-        Button btnCardapio = criarBotaoSidebar("🍔 Gerenciar Cardápio");
 
-        // Estilo especial para mostrar que a aba "Cardápio" está ativa
+        Button btnCardapio = criarBotaoSidebar("🍔 Gerenciar Cardápio");
         btnCardapio.setStyle("-fx-background-color: " + COR_VERMELHO + "; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-alignment: CENTER_LEFT; -fx-padding: 10 20 10 20; -fx-background-radius: 8px; -fx-cursor: hand;");
 
         Region espacador = new Region();
         VBox.setVgrow(espacador, Priority.ALWAYS);
 
-        Button btnSair = criarBotaoSidebar("🚪 Sair do Sistema");
-        btnSair.setStyle("-fx-background-color: transparent; -fx-text-fill: #e74c3c; -fx-font-size: 15px; -fx-font-weight: bold; -fx-alignment: CENTER_LEFT; -fx-padding: 10 20 10 20; -fx-cursor: hand;");
+        // IMPLEMENTAÇÃO: Botão Sair com Borda Vermelha (Retângulo ao redor)
+        Button btnSair = new Button("🚪 Sair do Sistema");
+        btnSair.setMaxWidth(Double.MAX_VALUE);
+        btnSair.setStyle(
+                "-fx-background-color: transparent; " +
+                        "-fx-text-fill: #e74c3c; " +
+                        "-fx-font-size: 15px; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-alignment: CENTER_LEFT; " +
+                        "-fx-padding: 10 20 10 20; " +
+                        "-fx-cursor: hand; " +
+                        "-fx-border-color: #e74c3c; " + // Retângulo Vermelho
+                        "-fx-border-width: 2px; " +
+                        "-fx-border-radius: 8px;"
+        );
+
+        btnSair.setOnAction(e -> {
+            Stage stage = (Stage) btnSair.getScene().getWindow();
+            stage.setScene(new Scene(new TelaLogin().getLayout(), 1100, 700));
+        });
 
         sidebar.getChildren().addAll(boxHeader, btnPedidos, btnCardapio, espacador, btnSair);
         return sidebar;
@@ -84,7 +99,7 @@ public class TelaGerenteHome {
     }
 
     // ==========================================
-    // 2. ABA: GERENCIAR CARDÁPIO (Onde o Gerente cadastra a comida)
+    // 2. ABA: GERENCIAR CARDÁPIO
     // ==========================================
     private ScrollPane criarAbaCardapio() {
         VBox layoutCentral = new VBox(25);
@@ -93,7 +108,6 @@ public class TelaGerenteHome {
         Label tituloAba = new Label("Gerenciamento de Cardápio");
         tituloAba.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
 
-        // --- CARTÃO DO FORMULÁRIO DE CADASTRO DE ITEM ---
         VBox cartaoFormulario = new VBox(20);
         cartaoFormulario.setPadding(new Insets(30));
         cartaoFormulario.setStyle("-fx-background-color: white; -fx-background-radius: 12px;");
@@ -106,7 +120,6 @@ public class TelaGerenteHome {
         Label lblNovoItem = new Label("Adicionar Novo Prato");
         lblNovoItem.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: " + COR_VERMELHO + ";");
 
-        // Linha 1: Nome e Categoria
         TextField txtNome = new TextField();
         txtNome.setPromptText("Nome do prato (Ex: Pizza Marguerita)");
         estilizarCampo(txtNome);
@@ -118,15 +131,13 @@ public class TelaGerenteHome {
         cbCategoria.setPrefWidth(200);
 
         HBox linha1 = new HBox(20, criarBoxComLabel("Nome do Prato", txtNome), criarBoxComLabel("Categoria", cbCategoria));
-        HBox.setHgrow(linha1.getChildren().get(0), Priority.ALWAYS); // Faz o campo de nome esticar
+        HBox.setHgrow(linha1.getChildren().get(0), Priority.ALWAYS);
 
-        // Linha 2: Descrição
         TextField txtDescricao = new TextField();
         txtDescricao.setPromptText("Descrição curta e apetitosa...");
         estilizarCampo(txtDescricao);
         VBox boxDesc = criarBoxComLabel("Descrição", txtDescricao);
 
-        // Linha 3: Preço e Botão Salvar
         TextField txtPreco = new TextField();
         txtPreco.setPromptText("Ex: 45.90");
         txtPreco.setPrefWidth(150);
@@ -142,20 +153,17 @@ public class TelaGerenteHome {
         HBox.setHgrow(espacadorBtn, Priority.ALWAYS);
         linha3.getChildren().addAll(espacadorBtn, btnSalvar);
 
-        // AÇÃO DO BOTÃO: Salvar o item no JSON via Controller!
         btnSalvar.setOnAction(e -> {
             try {
                 String nome = txtNome.getText();
                 String desc = txtDescricao.getText();
-                // Troca a vírgula por ponto para não dar erro no Double.parseDouble
                 double preco = Double.parseDouble(txtPreco.getText().replace(",", "."));
                 Categoria cat = cbCategoria.getValue();
 
-                if (nome.isEmpty() || cat == null) {
+                if (nome.trim().isEmpty() || cat == null) {
                     throw new IllegalArgumentException("Preencha todos os campos obrigatórios!");
                 }
 
-                // Passamos true para "disponível" e null para a imagem (vai usar o placeholder)
                 cardapioController.adicionarItem(nome, desc, preco, cat, true, null);
 
                 Alert sucesso = new Alert(Alert.AlertType.INFORMATION);
@@ -164,7 +172,6 @@ public class TelaGerenteHome {
                 sucesso.setContentText(nome + " adicionado ao cardápio com sucesso!");
                 sucesso.showAndWait();
 
-                // Limpa os campos para o gerente poder cadastrar outro prato
                 txtNome.clear();
                 txtDescricao.clear();
                 txtPreco.clear();
