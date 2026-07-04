@@ -1,9 +1,12 @@
 package br.edu.ifpb.ads.foodjava.view;
 
 import br.edu.ifpb.ads.foodjava.controller.AutenticacaoController;
+import br.edu.ifpb.ads.foodjava.model.Cliente;
+import br.edu.ifpb.ads.foodjava.model.Gerente;
 import br.edu.ifpb.ads.foodjava.model.Usuario;
 import br.edu.ifpb.ads.foodjava.repository.UsuarioRepository;
 import br.edu.ifpb.ads.foodjava.repository.UsuarioRepositoryJsonImpl;
+import javafx.animation.PauseTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -13,29 +16,26 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.InputStream;
 
 public class TelaLogin {
 
-    // Definições de cores e constantes visuais de acordo com o pedido
     private final String COR_VERMELHO = "#ea1d2c";
     private final String COR_AZUL_LINK = "#0984e3";
 
     private AutenticacaoController loginController;
     private HBox telaPrincipal;
+    private VBox cartaoLogin; // Mantendo a referência para a tela de sucesso
 
     public TelaLogin() {
-        // Inicializa o repositório JSON e injeta no Controller do Back-end
         UsuarioRepository repo = new UsuarioRepositoryJsonImpl();
         this.loginController = new AutenticacaoController(repo);
 
         telaPrincipal = new HBox();
         telaPrincipal.setAlignment(Pos.CENTER);
 
-        // ==========================================
-        // LADO ESQUERDO: Imagem do Entregador (60%)
-        // ==========================================
         StackPane painelImagemEsquerdo = new StackPane();
         painelImagemEsquerdo.setPrefWidth(660);
         painelImagemEsquerdo.setMinWidth(660);
@@ -44,21 +44,12 @@ public class TelaLogin {
         InputStream streamFundo = getClass().getResourceAsStream("/images/fundo_login.jpg");
         if (streamFundo != null) {
             Image imgFundo = new Image(streamFundo);
-            BackgroundImage bImg = new BackgroundImage(
-                    imgFundo,
-                    BackgroundRepeat.NO_REPEAT,
-                    BackgroundRepeat.NO_REPEAT,
-                    BackgroundPosition.CENTER,
-                    new BackgroundSize(BackgroundSize.AUTO, BackgroundSize.AUTO, false, false, false, true)
-            );
+            BackgroundImage bImg = new BackgroundImage(imgFundo, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, new BackgroundSize(BackgroundSize.AUTO, BackgroundSize.AUTO, false, false, false, true));
             painelImagemEsquerdo.setBackground(new Background(bImg));
         } else {
             painelImagemEsquerdo.setStyle("-fx-background-color: #cccccc;");
         }
 
-        // ==========================================
-        // LADO DIREITO: Fundo Vermelho e Cartão (40%)
-        // ==========================================
         VBox painelFormularioDireito = new VBox();
         painelFormularioDireito.setAlignment(Pos.CENTER);
         painelFormularioDireito.setPrefWidth(440);
@@ -66,14 +57,12 @@ public class TelaLogin {
         painelFormularioDireito.setMaxWidth(440);
         painelFormularioDireito.setStyle("-fx-background-color: " + COR_VERMELHO + ";");
 
-        // Cartão branco de Login com cantos arredondados
-        VBox cartaoLogin = new VBox(22);
+        cartaoLogin = new VBox(22);
         cartaoLogin.setAlignment(Pos.TOP_CENTER);
         cartaoLogin.setPadding(new Insets(45, 35, 45, 35));
         cartaoLogin.setMaxWidth(380);
         cartaoLogin.setStyle("-fx-background-color: #ffffff; -fx-background-radius: 16px;");
 
-        // Perímetro de sombra para profundidade
         DropShadow sombraPerimetro = new DropShadow();
         sombraPerimetro.setColor(Color.rgb(0, 0, 0, 0.25));
         sombraPerimetro.setRadius(25);
@@ -82,32 +71,26 @@ public class TelaLogin {
         Label titulo = new Label("Acessar Conta");
         titulo.setStyle("-fx-text-fill: #2c3e50; -fx-font-size: 28px; -fx-font-weight: bold;");
 
-        // Subtítulo nítido, visível e escuro
         Label subtitulo = new Label("Digite suas credenciais abaixo");
         subtitulo.setStyle("-fx-font-size: 14px; -fx-text-fill: #34495e; -fx-font-weight: bold;");
 
-        // Estilos para campos de texto
         String estiloCampo = "-fx-pref-height: 48px; -fx-background-radius: 8px; -fx-font-size: 15px; -fx-border-color: #e2e8f0; -fx-border-radius: 8px; -fx-background-color: #f8fafc;";
         String estiloCampoSenha = estiloCampo + " -fx-padding: 0 40 0 10;";
 
         TextField txtEmail = new TextField();
-        txtEmail.setPromptText("E-mail corporativo ou pessoal");
+        txtEmail.setPromptText("exemplo@gmail.com"); // A pedido do cliente
         txtEmail.setStyle(estiloCampo);
 
-        // Sistema dinâmico de mostrar/ocultar senha
         PasswordField txtSenhaOculta = new PasswordField();
-        txtSenhaOculta.setPromptText("Sua senha cadastrada");
+        txtSenhaOculta.setPromptText("Mín. 8 caracteres e 1 número"); // A pedido do cliente
         txtSenhaOculta.setStyle(estiloCampoSenha);
 
         TextField txtSenhaVisivel = new TextField();
-        txtSenhaVisivel.setPromptText("Sua senha cadastrada");
+        txtSenhaVisivel.setPromptText("Mín. 8 caracteres e 1 número");
         txtSenhaVisivel.setStyle(estiloCampoSenha);
         txtSenhaVisivel.setVisible(false);
-
-        // Vincula de forma bidirecional os dois inputs de senha
         txtSenhaVisivel.textProperty().bindBidirectional(txtSenhaOculta.textProperty());
 
-        // Botão de alternar visualização (Olho)
         Button btnOlho = new Button("👁");
         btnOlho.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 16px; -fx-text-fill: #7f8c8d;");
 
@@ -118,7 +101,6 @@ public class TelaLogin {
             btnOlho.setText(isVisivel ? "👁" : "🙈");
         });
 
-        // Agrupamento dos campos de senha e do ícone de olho
         StackPane stackSenha = new StackPane(txtSenhaVisivel, txtSenhaOculta, btnOlho);
         StackPane.setAlignment(btnOlho, Pos.CENTER_RIGHT);
         StackPane.setMargin(btnOlho, new Insets(0, 5, 0, 0));
@@ -127,11 +109,9 @@ public class TelaLogin {
         btnEntrar.setPrefWidth(Double.MAX_VALUE);
         btnEntrar.setStyle("-fx-background-color: " + COR_VERMELHO + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-height: 48px; -fx-background-radius: 8px; -fx-font-size: 16px; -fx-cursor: hand;");
 
-        // Link de cadastro estilizado na cor azul destacada
         Button btnCadastrar = new Button("Ainda não tem conta? Cadastre-se");
         btnCadastrar.setStyle("-fx-background-color: transparent; -fx-text-fill: " + COR_AZUL_LINK + "; -fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand;");
 
-        // Eventos e Navegações
         btnCadastrar.setOnAction(e -> {
             Stage stage = (Stage) btnCadastrar.getScene().getWindow();
             TelaCadastrarCliente telaCad = new TelaCadastrarCliente();
@@ -144,18 +124,14 @@ public class TelaLogin {
             try {
                 Usuario usuarioEncontrado = loginController.fazerLogin(email, senha);
                 if (usuarioEncontrado != null) {
-                    System.out.println("Login efetuado com sucesso no console!");
 
-                    // Navegação real para a tela do cardápio enviando os dados do usuário autenticado
-                    Stage stage = (Stage) btnEntrar.getScene().getWindow();
-                    TelaClienteHome telaHome = new TelaClienteHome(usuarioEncontrado);
-                    stage.setScene(new Scene(telaHome.getLayout(), 1100, 700));
+                    mostrarTelaSucessoEredirecionar(usuarioEncontrado);
 
                 } else {
-                    mostrarAlerta("Credenciais Inválidas", "Verifique se digitou o e-mail e senha corretamente.");
+                    mostrarAlertaErro("Verifique se digitou o e-mail e senha corretamente.");
                 }
             } catch (Exception ex) {
-                mostrarAlerta("Erro de Conexão", ex.getMessage());
+                mostrarAlertaErro(ex.getMessage());
             }
         });
 
@@ -164,12 +140,45 @@ public class TelaLogin {
         telaPrincipal.getChildren().addAll(painelImagemEsquerdo, painelFormularioDireito);
     }
 
-    private void mostrarAlerta(String titulo, String mensagem) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(titulo);
-        alert.setHeaderText(null);
-        alert.setContentText(mensagem);
-        alert.showAndWait();
+    // NOVO: Tela de Sucesso Embutida no Cartão! (Sem alertas)
+    private void mostrarTelaSucessoEredirecionar(Usuario usuarioEncontrado) {
+        cartaoLogin.getChildren().clear();
+
+        Label check = new Label("✔️");
+        check.setStyle("-fx-font-size: 60px; -fx-text-fill: #2ecc71;");
+
+        Label lblSucesso = new Label("Login Efetuado!");
+        lblSucesso.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+
+        Label lblMsg = new Label("Bem-vindo(a), " + usuarioEncontrado.getNome());
+        lblMsg.setStyle("-fx-font-size: 15px; -fx-text-fill: #7f8c8d;");
+
+        cartaoLogin.getChildren().addAll(check, lblSucesso, lblMsg);
+        cartaoLogin.setAlignment(Pos.CENTER);
+
+        // Espera 1.5s e manda para a Home certa
+        PauseTransition delay = new PauseTransition(Duration.seconds(3));
+        delay.setOnFinished(e -> {
+            Stage stage = (Stage) telaPrincipal.getScene().getWindow();
+
+            // O Roteador Inteligente: Ele checa a instância da classe!
+            if (usuarioEncontrado instanceof Gerente) {
+                TelaGerenteHome telaGerente = new TelaGerenteHome(usuarioEncontrado);
+                stage.setScene(new Scene(telaGerente.getLayout(), 1100, 700));
+            } else if (usuarioEncontrado instanceof Cliente) {
+                TelaClienteHome telaCliente = new TelaClienteHome(usuarioEncontrado);
+                stage.setScene(new Scene(telaCliente.getLayout(), 1100, 700));
+            }
+        });
+        delay.play();
+    }
+
+    private void mostrarAlertaErro(String mensagem) {
+        Alert alerta = new Alert(Alert.AlertType.ERROR);
+        alerta.setTitle("Acesso Negado");
+        alerta.setHeaderText(null);
+        alerta.setContentText(mensagem);
+        alerta.showAndWait();
     }
 
     public HBox getLayout() {
