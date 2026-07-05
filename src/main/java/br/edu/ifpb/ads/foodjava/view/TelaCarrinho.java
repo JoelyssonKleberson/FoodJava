@@ -31,6 +31,7 @@ public class TelaCarrinho {
     private VBox listaItensContainer;
     private Label lblSubtotalNum;
     private Label lblTotalNum;
+    private VBox cartaoResumo;
 
     public TelaCarrinho(Usuario clienteLogado, Map<ItemCardapio, Integer> carrinho) {
         this.clienteLogado = clienteLogado;
@@ -41,7 +42,7 @@ public class TelaCarrinho {
         telaPrincipal.setStyle("-fx-background-color: " + COR_FUNDO + ";");
         telaPrincipal.setPadding(new Insets(40));
 
-        // BOTÃO VOLTAR EM DESTAQUE (Com a Borda Vermelha)
+        // BOTÃO VOLTAR
         Button btnVoltar = new Button("⬅ Voltar ao Cardápio");
         btnVoltar.setStyle("-fx-background-color: transparent; -fx-text-fill: " + COR_VERMELHO + "; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-border-color: " + COR_VERMELHO + "; -fx-border-width: 2px; -fx-border-radius: 8px; -fx-padding: 8 15 8 15;");
         btnVoltar.setOnAction(e -> {
@@ -49,10 +50,22 @@ public class TelaCarrinho {
             stage.setScene(new Scene(new TelaClienteHome(clienteLogado).getLayout(), 1100, 700));
         });
 
+        // NOVO: BOTÃO LIMPAR CARRINHO
+        Button btnLimpar = new Button("🗑 Limpar Carrinho");
+        btnLimpar.setStyle("-fx-background-color: transparent; -fx-text-fill: #e74c3c; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-border-color: #e74c3c; -fx-border-width: 2px; -fx-border-radius: 8px; -fx-padding: 8 15 8 15;");
+        btnLimpar.setOnAction(e -> {
+            this.carrinho.clear();
+            atualizarTela();
+        });
+
         Label lblTitulo = new Label("Seu Carrinho");
         lblTitulo.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
 
-        VBox topo = new VBox(15, btnVoltar, lblTitulo);
+        Region espacadorTopo = new Region();
+        HBox.setHgrow(espacadorTopo, Priority.ALWAYS);
+
+        HBox botoesTopo = new HBox(15, btnVoltar, espacadorTopo, btnLimpar);
+        VBox topo = new VBox(15, botoesTopo, lblTitulo);
         topo.setPadding(new Insets(0, 0, 20, 0));
         telaPrincipal.setTop(topo);
 
@@ -65,7 +78,7 @@ public class TelaCarrinho {
         scrollItens.setStyle("-fx-background-color: transparent; -fx-background-insets: 0;");
         HBox.setHgrow(scrollItens, Priority.ALWAYS);
 
-        VBox cartaoResumo = criarCartaoResumo();
+        cartaoResumo = criarCartaoResumo();
 
         centro.getChildren().addAll(scrollItens, cartaoResumo);
         telaPrincipal.setCenter(centro);
@@ -169,9 +182,7 @@ public class TelaCarrinho {
                 Alert erro = new Alert(Alert.AlertType.ERROR); erro.setContentText("Adicione itens ao carrinho primeiro!"); erro.showAndWait();
                 return;
             }
-
             try {
-                // MÁGICA: O pedido é salvo no backend!
                 pedidoController.finalizarPedido((Cliente) clienteLogado, carrinho);
 
                 cartao.getChildren().clear();
@@ -183,13 +194,11 @@ public class TelaCarrinho {
 
                 PauseTransition delay = new PauseTransition(Duration.seconds(3));
                 delay.setOnFinished(ev -> {
-                    carrinho.clear(); // Limpa carrinho
-                    // Lança para a tela de histórico
+                    carrinho.clear();
                     Stage stage = (Stage) telaPrincipal.getScene().getWindow();
                     stage.setScene(new Scene(new TelaHistoricoPedidosCliente(clienteLogado).getLayout(), 1100, 700));
                 });
                 delay.play();
-
             } catch (Exception ex) {
                 Alert erro = new Alert(Alert.AlertType.ERROR); erro.setContentText(ex.getMessage()); erro.showAndWait();
             }
