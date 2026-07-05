@@ -1,6 +1,7 @@
 package br.edu.ifpb.ads.foodjava.view;
 
 import br.edu.ifpb.ads.foodjava.controller.CardapioController;
+import br.edu.ifpb.ads.foodjava.enums.Categoria;
 import br.edu.ifpb.ads.foodjava.model.ItemCardapio;
 import br.edu.ifpb.ads.foodjava.model.Usuario;
 import br.edu.ifpb.ads.foodjava.repository.CardapioRepositoryJsonImpl;
@@ -18,7 +19,9 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import java.io.File;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,10 +35,12 @@ public class TelaClienteHome {
     private Usuario clienteLogado;
     private CardapioController cardapioController;
 
-    // ESTADO DO CARRINHO (Guarda Item -> Quantidade)
     private Map<ItemCardapio, Integer> carrinhoDeCompras = new HashMap<>();
     private Button btnCarrinho;
     private FlowPane painelPratos;
+
+    // Lista de botões de categoria para controle visual
+    private List<Button> botoesCategorias;
 
     public TelaClienteHome(Usuario clienteLogado) {
         this.clienteLogado = clienteLogado;
@@ -48,35 +53,38 @@ public class TelaClienteHome {
         telaPrincipal.setCenter(criarCorpoDoCardapio());
     }
 
-    // ==========================================
-    // CABEÇALHO (Logo, Sair, Carrinho)
-    // ==========================================
     private HBox criarCabecalho() {
-        HBox cabecalho = new HBox(20);
+        HBox cabecalho = new HBox(15);
         cabecalho.setAlignment(Pos.CENTER_LEFT);
         cabecalho.setPadding(new Insets(10, 40, 10, 40));
         cabecalho.setStyle("-fx-background-color: " + COR_VERMELHO + ";");
 
-        DropShadow sombra = new DropShadow();
-        sombra.setColor(Color.rgb(0, 0, 0, 0.2));
-        sombra.setRadius(10);
+        DropShadow sombra = new DropShadow(); sombra.setColor(Color.rgb(0, 0, 0, 0.2)); sombra.setRadius(10);
         cabecalho.setEffect(sombra);
 
         ImageView imgLogo = new ImageView();
         try {
-            Image logo = new Image(getClass().getResourceAsStream("/images/logotipo.png"));
-            imgLogo.setImage(logo);
-            imgLogo.setFitHeight(75);
+            imgLogo.setImage(new Image(getClass().getResourceAsStream("/images/logotipo.png")));
+            imgLogo.setFitHeight(60);
             imgLogo.setPreserveRatio(true);
         } catch (Exception e) {}
 
         Label saudacao = new Label("Olá, " + clienteLogado.getNome() + "!");
-        saudacao.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
+        saudacao.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;");
 
         Region espacador = new Region();
         HBox.setHgrow(espacador, Priority.ALWAYS);
 
-        // BOTÃO SAIR
+        // BOTÃO HISTÓRICO DE PEDIDOS (NOVO!)
+        Button btnPedidos = new Button("📄 Meus Pedidos");
+        btnPedidos.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-border-color: white; -fx-border-radius: 20px; -fx-padding: 8 15 8 15;");
+        btnPedidos.setOnAction(e -> {
+            Stage stage = (Stage) btnPedidos.getScene().getWindow();
+            TelaHistoricoPedidosCliente tela = new TelaHistoricoPedidosCliente(clienteLogado);
+            stage.setScene(new Scene(tela.getLayout(), 1100, 700));
+        });
+
+        // BOTÃO SAIR (Vai pro Splash)
         Button btnSair = new Button("Sair");
         btnSair.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-border-color: white; -fx-border-radius: 20px; -fx-padding: 8 20 8 20;");
         btnSair.setOnAction(e -> {
@@ -86,7 +94,6 @@ public class TelaClienteHome {
             splash.iniciarTransicaoEroteamento(stage);
         });
 
-        // BOTÃO CARRINHO
         btnCarrinho = new Button("🛒 Meu Carrinho (0)");
         btnCarrinho.setStyle("-fx-background-color: white; -fx-text-fill: #2c3e50; -fx-font-weight: bold; -fx-font-size: 15px; -fx-background-radius: 20px; -fx-padding: 10 20 10 20; -fx-cursor: hand;");
         btnCarrinho.setOnAction(e -> {
@@ -95,13 +102,10 @@ public class TelaClienteHome {
             stage.setScene(new Scene(telaCarrinho.getLayout(), 1100, 700));
         });
 
-        cabecalho.getChildren().addAll(imgLogo, saudacao, espacador, btnSair, btnCarrinho);
+        cabecalho.getChildren().addAll(imgLogo, saudacao, espacador, btnPedidos, btnSair, btnCarrinho);
         return cabecalho;
     }
 
-    // ==========================================
-    // CORPO DO CARDÁPIO (Puxa do Banco de Dados)
-    // ==========================================
     private ScrollPane criarCorpoDoCardapio() {
         VBox layoutCentral = new VBox(25);
         layoutCentral.setPadding(new Insets(30, 40, 30, 40));
@@ -109,20 +113,31 @@ public class TelaClienteHome {
         Label tituloCat = new Label("O que vamos pedir hoje?");
         tituloCat.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
 
-        HBox categorias = new HBox(15);
-        categorias.getChildren().addAll(
-                criarBotaoCategoria("🍔 Todos", true),
-                criarBotaoCategoria("🥗 Entrada", false),
-                criarBotaoCategoria("🍛 Prato Principal", false),
-                criarBotaoCategoria("🍰 Sobremesa", false),
-                criarBotaoCategoria("🥤 Bebidas", false)
-        );
+        // FILTROS FUNCIONAIS
+        Button btnTodos = criarBotaoCategoria("🍔 Todos");
+        Button btnEntrada = criarBotaoCategoria("🥗 Entrada");
+        Button btnPrincipal = criarBotaoCategoria("🍛 Prato Principal");
+        Button btnSobremesa = criarBotaoCategoria("🍰 Sobremesa");
+        Button btnBebidas = criarBotaoCategoria("🥤 Bebidas");
+
+        botoesCategorias = Arrays.asList(btnTodos, btnEntrada, btnPrincipal, btnSobremesa, btnBebidas);
+
+        // Ações de Filtragem
+        btnTodos.setOnAction(e -> { destacarBotaoCat(btnTodos); carregarPratosDoBanco(null); });
+        btnEntrada.setOnAction(e -> { destacarBotaoCat(btnEntrada); carregarPratosDoBanco(Categoria.ENTRADA); });
+        btnPrincipal.setOnAction(e -> { destacarBotaoCat(btnPrincipal); carregarPratosDoBanco(Categoria.PRATO_PRINCIPAL); });
+        btnSobremesa.setOnAction(e -> { destacarBotaoCat(btnSobremesa); carregarPratosDoBanco(Categoria.SOBREMESA); });
+        btnBebidas.setOnAction(e -> { destacarBotaoCat(btnBebidas); carregarPratosDoBanco(Categoria.BEBIDAS); });
+
+        destacarBotaoCat(btnTodos); // Ativa o "Todos" por padrão
+
+        HBox categorias = new HBox(15, btnTodos, btnEntrada, btnPrincipal, btnSobremesa, btnBebidas);
 
         painelPratos = new FlowPane();
         painelPratos.setHgap(30);
         painelPratos.setVgap(30);
 
-        carregarPratosDoBanco(); // Puxa os dados reais!
+        carregarPratosDoBanco(null);
 
         layoutCentral.getChildren().addAll(tituloCat, categorias, painelPratos);
 
@@ -132,30 +147,35 @@ public class TelaClienteHome {
         return scroll;
     }
 
-    private void carregarPratosDoBanco() {
+    private void destacarBotaoCat(Button ativo) {
+        String inativo = "-fx-background-color: white; -fx-text-fill: #7f8c8d; -fx-font-weight: bold; -fx-font-size: 15px; -fx-background-radius: 20px; -fx-padding: 10 22 10 22; -fx-cursor: hand; -fx-border-color: #dcdde1; -fx-border-radius: 20px;";
+        String selecionado = "-fx-background-color: " + COR_VERMELHO + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-background-radius: 20px; -fx-padding: 10 22 10 22; -fx-cursor: hand;";
+
+        for (Button b : botoesCategorias) b.setStyle(inativo);
+        ativo.setStyle(selecionado);
+    }
+
+    private void carregarPratosDoBanco(Categoria filtro) {
         painelPratos.getChildren().clear();
-        List<ItemCardapio> itens = cardapioController.listarCardapioCompleto();
+
+        List<ItemCardapio> itens;
+        if (filtro == null) itens = cardapioController.listarCardapioCompleto();
+        else itens = cardapioController.listarPorCategoria(filtro);
 
         if (itens == null || itens.isEmpty()) {
-            Label lblVazio = new Label("O restaurante ainda não cadastrou nenhum prato! :(");
+            Label lblVazio = new Label("Nenhum prato encontrado nesta categoria.");
             lblVazio.setStyle("-fx-font-size: 16px; -fx-text-fill: #7f8c8d;");
             painelPratos.getChildren().add(lblVazio);
             return;
         }
 
         for (ItemCardapio item : itens) {
-            painelPratos.getChildren().add(criarCartaoProduto(item));
+            if (item.isDisponivel()) painelPratos.getChildren().add(criarCartaoProduto(item));
         }
     }
 
-    private Button criarBotaoCategoria(String nome, boolean selecionado) {
-        Button btn = new Button(nome);
-        if (selecionado) {
-            btn.setStyle("-fx-background-color: " + COR_VERMELHO + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-background-radius: 20px; -fx-padding: 10 22 10 22; -fx-cursor: hand;");
-        } else {
-            btn.setStyle("-fx-background-color: white; -fx-text-fill: #7f8c8d; -fx-font-weight: bold; -fx-font-size: 15px; -fx-background-radius: 20px; -fx-padding: 10 22 10 22; -fx-cursor: hand; -fx-border-color: #dcdde1; -fx-border-radius: 20px;");
-        }
-        return btn;
+    private Button criarBotaoCategoria(String nome) {
+        return new Button(nome); // O estilo é aplicado pelo destacarBotaoCat()
     }
 
     private VBox criarCartaoProduto(ItemCardapio item) {
@@ -163,15 +183,27 @@ public class TelaClienteHome {
         cartao.setPadding(new Insets(15));
         cartao.setPrefWidth(220);
         cartao.setStyle("-fx-background-color: white; -fx-background-radius: 15px;");
-
-        DropShadow sombra = new DropShadow();
-        sombra.setColor(Color.rgb(0, 0, 0, 0.08));
-        sombra.setRadius(15);
+        DropShadow sombra = new DropShadow(); sombra.setColor(Color.rgb(0, 0, 0, 0.08)); sombra.setRadius(15);
         cartao.setEffect(sombra);
 
+        // LÓGICA INTELIGENTE DE IMAGEM
         ImageView imgPrato = new ImageView();
-        InputStream isImg = getClass().getResourceAsStream("/images/comida_padrao.jpg");
-        if (isImg != null) imgPrato.setImage(new Image(isImg));
+        Image imagemFinal = null;
+
+        if (item.getImagemPath() != null && !item.getImagemPath().isEmpty()) {
+            try {
+                // Tenta carregar imagem externa do JSON
+                File file = new File(item.getImagemPath());
+                if (file.exists()) imagemFinal = new Image(file.toURI().toString());
+            } catch (Exception ignored) {}
+        }
+        // Fallback (Se não tem imagem no JSON ou arquivo não existe)
+        if (imagemFinal == null) {
+            InputStream is = getClass().getResourceAsStream("/images/comida_padrao.jpg");
+            if (is != null) imagemFinal = new Image(is);
+        }
+
+        imgPrato.setImage(imagemFinal);
         imgPrato.setFitWidth(190);
         imgPrato.setFitHeight(130);
 
@@ -190,16 +222,13 @@ public class TelaClienteHome {
         btnAdd.setPrefWidth(Double.MAX_VALUE);
         btnAdd.setStyle("-fx-background-color: " + COR_VERMELHO + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8px; -fx-cursor: hand; -fx-font-size: 14px;");
 
-        // Lógica de Adicionar ao Carrinho!
         btnAdd.setOnAction(e -> {
             int qtdAtual = carrinhoDeCompras.getOrDefault(item, 0);
             carrinhoDeCompras.put(item, qtdAtual + 1);
 
-            // Atualiza o botão no topo
             int totalItens = carrinhoDeCompras.values().stream().mapToInt(Integer::intValue).sum();
             btnCarrinho.setText("🛒 Meu Carrinho (" + totalItens + ")");
 
-            // Animação no botão para mostrar que adicionou
             btnAdd.setText("Adicionado ✔");
             btnAdd.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8px; -fx-font-size: 14px;");
 
