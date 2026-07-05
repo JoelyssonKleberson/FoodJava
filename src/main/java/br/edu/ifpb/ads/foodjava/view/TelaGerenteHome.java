@@ -111,9 +111,6 @@ public class TelaGerenteHome {
         ativo.setStyle(estiloAtivo);
     }
 
-    // ==========================================
-    // ABA 1: KANBAN
-    // ==========================================
     private void abrirAbaPedidos() {
         atualizarBotoesMenu(btnPedidos);
 
@@ -130,11 +127,9 @@ public class TelaGerenteHome {
         colPreparo = criarColunaKanban("👨‍🍳 Em Preparo", "#3498db");
         colEntregues = criarColunaKanban("✅ Entregues", "#2ecc71");
 
-        // NOVO: Botão para limpar a coluna de Entregues
         Button btnLimparEntregues = new Button("🧹 Limpar Lista");
         btnLimparEntregues.setStyle("-fx-background-color: transparent; -fx-text-fill: #7f8c8d; -fx-cursor: hand;");
         btnLimparEntregues.setOnAction(e -> {
-            // Remove tudo da tela que for da classe VBox (que são os cartões)
             colEntregues.getChildren().removeIf(node -> node instanceof VBox);
         });
         colEntregues.getChildren().add(btnLimparEntregues);
@@ -157,8 +152,6 @@ public class TelaGerenteHome {
     private void atualizarKanban() {
         colPendentes.getChildren().removeIf(node -> node instanceof VBox);
         colPreparo.getChildren().removeIf(node -> node instanceof VBox);
-
-        // Protege o botão de limpar na coluna de entregues
         colEntregues.getChildren().removeIf(node -> node instanceof VBox);
 
         List<Pedido> pedidos = pedidoController.listarTodosPedidos();
@@ -228,9 +221,6 @@ public class TelaGerenteHome {
         return cartao;
     }
 
-    // ==========================================
-    // ABA 2: GERENCIAR CARDÁPIO E IMPORTAR JSON
-    // ==========================================
     private void abrirAbaCardapio() {
         atualizarBotoesMenu(btnCardapio);
 
@@ -260,7 +250,7 @@ public class TelaGerenteHome {
                     alerta.setHeaderText(null);
                     alerta.setContentText("O cardápio foi importado com sucesso!");
                     alerta.showAndWait();
-                    abrirAbaCardapio(); // Recarrega a aba inteira para mostrar novos itens
+                    abrirAbaCardapio();
                 } catch (Exception ex) {
                     mostrarAlertaErro("Erro ao importar: " + ex.getMessage());
                 }
@@ -278,7 +268,6 @@ public class TelaGerenteHome {
 
         montarFormularioCardapio(cartaoFormulario);
 
-        // NOVO: SESSÃO DE LISTAGEM E REMOÇÃO DE ITENS DO CARDÁPIO
         VBox cartaoLista = new VBox(15);
         cartaoLista.setPadding(new Insets(30));
         cartaoLista.setStyle("-fx-background-color: white; -fx-background-radius: 12px;");
@@ -324,11 +313,10 @@ public class TelaGerenteHome {
             Button btnRemover = new Button("🗑 Remover");
             btnRemover.setStyle("-fx-background-color: transparent; -fx-text-fill: #e74c3c; -fx-cursor: hand;");
 
-            // AÇÃO DE REMOVER
             btnRemover.setOnAction(e -> {
                 try {
                     cardapioController.removerItem(item);
-                    atualizarListaCardapio(container); // Refresh local
+                    atualizarListaCardapio(container);
                 } catch (Exception ex) {
                     mostrarAlertaErro(ex.getMessage());
                 }
@@ -355,6 +343,12 @@ public class TelaGerenteHome {
         HBox.setHgrow(linha1.getChildren().get(0), Priority.ALWAYS);
 
         TextField txtDescricao = new TextField(); txtDescricao.setPromptText("Descrição apetitosa..."); estilizarCampo(txtDescricao);
+
+        TextField txtImagem = new TextField(); txtImagem.setPromptText("Ex: pizza_queijo.jpg"); estilizarCampo(txtImagem);
+
+        HBox linha2 = new HBox(20, criarBoxComLabel("Descrição", txtDescricao), criarBoxComLabel("Nome da Imagem", txtImagem));
+        HBox.setHgrow(linha2.getChildren().get(0), Priority.ALWAYS);
+
         TextField txtPreco = new TextField(); txtPreco.setPromptText("Ex: 45.90"); txtPreco.setPrefWidth(150); estilizarCampo(txtPreco);
 
         Button btnSalvar = new Button("Salvar no Cardápio");
@@ -374,7 +368,19 @@ public class TelaGerenteHome {
 
                 if (nome.trim().isEmpty() || cat == null) throw new IllegalArgumentException("Preencha todos os campos obrigatórios!");
 
-                cardapioController.adicionarItem(nome, desc, preco, cat, true, null);
+                // O CÉREBRO DA IMAGEM: Ele salva APENAS o nome do arquivo, e garante que tenha extensão!
+                String imgNome = txtImagem.getText().trim();
+                String nomeArquivoImagem = null;
+
+                if (!imgNome.isEmpty()) {
+                    if (imgNome.toLowerCase().endsWith(".jpg")) {
+                        nomeArquivoImagem = imgNome;
+                    } else {
+                        nomeArquivoImagem = imgNome + ".jpg"; // Adiciona .jpg automático se o cara esquecer
+                    }
+                }
+
+                cardapioController.adicionarItem(nome, desc, preco, cat, true, nomeArquivoImagem);
                 mostrarSucessoInterno(cartaoFormulario, nome);
 
             } catch (NumberFormatException ex) {
@@ -384,7 +390,7 @@ public class TelaGerenteHome {
             }
         });
 
-        cartaoFormulario.getChildren().addAll(lblNovoItem, linha1, criarBoxComLabel("Descrição", txtDescricao), linha3);
+        cartaoFormulario.getChildren().addAll(lblNovoItem, linha1, linha2, linha3);
     }
 
     private void mostrarSucessoInterno(VBox cartaoFormulario, String nomePrato) {
@@ -397,7 +403,7 @@ public class TelaGerenteHome {
         PauseTransition delay = new PauseTransition(Duration.seconds(2.0));
         delay.setOnFinished(ev -> {
             cartaoFormulario.setAlignment(Pos.TOP_LEFT);
-            abrirAbaCardapio(); // Recarrega tudo para atualizar a lista embaixo
+            abrirAbaCardapio();
         });
         delay.play();
     }
@@ -415,7 +421,7 @@ public class TelaGerenteHome {
 
     private void mostrarAlertaErro(String mensagem) {
         Alert alerta = new Alert(Alert.AlertType.ERROR);
-        alerta.setTitle("Erro"); alerta.setHeaderText(null); alerta.setContentText(mensagem); alerta.showAndWait();
+        alerta.setTitle("Atenção"); alerta.setHeaderText(null); alerta.setContentText(mensagem); alerta.showAndWait();
     }
 
     public BorderPane getLayout() { return telaPrincipal; }
