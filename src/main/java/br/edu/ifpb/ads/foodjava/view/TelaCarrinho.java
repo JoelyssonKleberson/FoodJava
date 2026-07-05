@@ -1,7 +1,10 @@
 package br.edu.ifpb.ads.foodjava.view;
 
+import br.edu.ifpb.ads.foodjava.controller.PedidoController;
+import br.edu.ifpb.ads.foodjava.model.Cliente;
 import br.edu.ifpb.ads.foodjava.model.ItemCardapio;
 import br.edu.ifpb.ads.foodjava.model.Usuario;
+import br.edu.ifpb.ads.foodjava.repository.PedidoRepositoryJsonImpl;
 import javafx.animation.PauseTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -23,23 +26,24 @@ public class TelaCarrinho {
     private BorderPane telaPrincipal;
     private Usuario clienteLogado;
     private Map<ItemCardapio, Integer> carrinho;
+    private PedidoController pedidoController;
 
     private VBox listaItensContainer;
     private Label lblSubtotalNum;
     private Label lblTotalNum;
-    private VBox cartaoResumo; // Para exibir a animação final
 
     public TelaCarrinho(Usuario clienteLogado, Map<ItemCardapio, Integer> carrinho) {
         this.clienteLogado = clienteLogado;
         this.carrinho = carrinho;
+        this.pedidoController = new PedidoController(new PedidoRepositoryJsonImpl());
 
         telaPrincipal = new BorderPane();
         telaPrincipal.setStyle("-fx-background-color: " + COR_FUNDO + ";");
         telaPrincipal.setPadding(new Insets(40));
 
-        // Cabeçalho Simples
+        // BOTÃO VOLTAR EM DESTAQUE (Com a Borda Vermelha)
         Button btnVoltar = new Button("⬅ Voltar ao Cardápio");
-        btnVoltar.setStyle("-fx-background-color: transparent; -fx-text-fill: #7f8c8d; -fx-font-weight: bold; -fx-font-size: 16px; -fx-cursor: hand;");
+        btnVoltar.setStyle("-fx-background-color: transparent; -fx-text-fill: " + COR_VERMELHO + "; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-border-color: " + COR_VERMELHO + "; -fx-border-width: 2px; -fx-border-radius: 8px; -fx-padding: 8 15 8 15;");
         btnVoltar.setOnAction(e -> {
             Stage stage = (Stage) btnVoltar.getScene().getWindow();
             stage.setScene(new Scene(new TelaClienteHome(clienteLogado).getLayout(), 1100, 700));
@@ -48,23 +52,20 @@ public class TelaCarrinho {
         Label lblTitulo = new Label("Seu Carrinho");
         lblTitulo.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
 
-        VBox topo = new VBox(10, btnVoltar, lblTitulo);
+        VBox topo = new VBox(15, btnVoltar, lblTitulo);
         topo.setPadding(new Insets(0, 0, 20, 0));
         telaPrincipal.setTop(topo);
 
-        // Corpo
         HBox centro = new HBox(30);
         centro.setAlignment(Pos.TOP_CENTER);
 
-        // Esquerda: Lista de Itens
         listaItensContainer = new VBox(15);
         ScrollPane scrollItens = new ScrollPane(listaItensContainer);
         scrollItens.setFitToWidth(true);
         scrollItens.setStyle("-fx-background-color: transparent; -fx-background-insets: 0;");
         HBox.setHgrow(scrollItens, Priority.ALWAYS);
 
-        // Direita: Resumo Financeiro
-        cartaoResumo = criarCartaoResumo();
+        VBox cartaoResumo = criarCartaoResumo();
 
         centro.getChildren().addAll(scrollItens, cartaoResumo);
         telaPrincipal.setCenter(centro);
@@ -93,16 +94,14 @@ public class TelaCarrinho {
         }
 
         lblSubtotalNum.setText(String.format("R$ %.2f", subtotal));
-        lblTotalNum.setText(String.format("R$ %.2f", subtotal)); // Entrega grátis
+        lblTotalNum.setText(String.format("R$ %.2f", subtotal));
     }
 
     private HBox criarLinhaItem(ItemCardapio item, int qtd) {
         HBox linha = new HBox(20);
         linha.setPadding(new Insets(20));
         linha.setStyle("-fx-background-color: white; -fx-background-radius: 12px;");
-        DropShadow sombra = new DropShadow();
-        sombra.setColor(Color.rgb(0, 0, 0, 0.05));
-        linha.setEffect(sombra);
+        DropShadow sombra = new DropShadow(); sombra.setColor(Color.rgb(0, 0, 0, 0.05)); linha.setEffect(sombra);
         linha.setAlignment(Pos.CENTER_LEFT);
 
         VBox descBox = new VBox(5);
@@ -113,7 +112,6 @@ public class TelaCarrinho {
         descBox.getChildren().addAll(lblNome, lblPreco);
         HBox.setHgrow(descBox, Priority.ALWAYS);
 
-        // Controles de + e -
         Button btnMenos = new Button("-");
         btnMenos.setStyle("-fx-background-color: #ecf0f1; -fx-text-fill: #2c3e50; -fx-font-weight: bold; -fx-cursor: hand;");
         Label lblQtd = new Label(String.valueOf(qtd));
@@ -126,11 +124,7 @@ public class TelaCarrinho {
             if (carrinho.get(item) <= 0) carrinho.remove(item);
             atualizarTela();
         });
-
-        btnMais.setOnAction(e -> {
-            carrinho.put(item, qtd + 1);
-            atualizarTela();
-        });
+        btnMais.setOnAction(e -> { carrinho.put(item, qtd + 1); atualizarTela(); });
 
         HBox controlesQtd = new HBox(btnMenos, lblQtd, btnMais);
         controlesQtd.setAlignment(Pos.CENTER);
@@ -144,38 +138,27 @@ public class TelaCarrinho {
 
     private VBox criarCartaoResumo() {
         VBox cartao = new VBox(20);
-        cartao.setPrefWidth(350);
-        cartao.setMinWidth(350);
-        cartao.setPadding(new Insets(30));
+        cartao.setPrefWidth(350); cartao.setMinWidth(350); cartao.setPadding(new Insets(30));
         cartao.setStyle("-fx-background-color: white; -fx-background-radius: 15px;");
-        DropShadow sombra = new DropShadow();
-        sombra.setColor(Color.rgb(0, 0, 0, 0.1));
-        sombra.setRadius(20);
-        cartao.setEffect(sombra);
+        DropShadow sombra = new DropShadow(); sombra.setColor(Color.rgb(0, 0, 0, 0.1)); sombra.setRadius(20); cartao.setEffect(sombra);
 
         Label lblTit = new Label("Resumo do Pedido");
         lblTit.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
 
-        // Subtotal
         HBox subBox = new HBox();
         Label lblSub = new Label("Subtotal"); lblSub.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 15px;");
         lblSubtotalNum = new Label("R$ 0,00"); lblSubtotalNum.setStyle("-fx-text-fill: #2c3e50; -fx-font-size: 15px; -fx-font-weight: bold;");
-        Region esp1 = new Region(); HBox.setHgrow(esp1, Priority.ALWAYS);
-        subBox.getChildren().addAll(lblSub, esp1, lblSubtotalNum);
+        Region esp1 = new Region(); HBox.setHgrow(esp1, Priority.ALWAYS); subBox.getChildren().addAll(lblSub, esp1, lblSubtotalNum);
 
-        // Taxa
         HBox taxaBox = new HBox();
         Label lblTaxa = new Label("Taxa de Entrega"); lblTaxa.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 15px;");
         Label lblTaxaNum = new Label("Grátis"); lblTaxaNum.setStyle("-fx-text-fill: #2ecc71; -fx-font-size: 15px; -fx-font-weight: bold;");
-        Region esp2 = new Region(); HBox.setHgrow(esp2, Priority.ALWAYS);
-        taxaBox.getChildren().addAll(lblTaxa, esp2, lblTaxaNum);
+        Region esp2 = new Region(); HBox.setHgrow(esp2, Priority.ALWAYS); taxaBox.getChildren().addAll(lblTaxa, esp2, lblTaxaNum);
 
-        // Total
         HBox totBox = new HBox();
         Label lblTot = new Label("Total"); lblTot.setStyle("-fx-text-fill: #2c3e50; -fx-font-size: 20px; -fx-font-weight: bold;");
         lblTotalNum = new Label("R$ 0,00"); lblTotalNum.setStyle("-fx-text-fill: " + COR_VERMELHO + "; -fx-font-size: 22px; -fx-font-weight: bold;");
-        Region esp3 = new Region(); HBox.setHgrow(esp3, Priority.ALWAYS);
-        totBox.getChildren().addAll(lblTot, esp3, lblTotalNum);
+        Region esp3 = new Region(); HBox.setHgrow(esp3, Priority.ALWAYS); totBox.getChildren().addAll(lblTot, esp3, lblTotalNum);
 
         Button btnFinalizar = new Button("Confirmar Pedido");
         btnFinalizar.setPrefWidth(Double.MAX_VALUE);
@@ -183,36 +166,38 @@ public class TelaCarrinho {
 
         btnFinalizar.setOnAction(e -> {
             if (carrinho.isEmpty()) {
-                Alert erro = new Alert(Alert.AlertType.ERROR);
-                erro.setContentText("Adicione itens ao carrinho primeiro!");
-                erro.showAndWait();
+                Alert erro = new Alert(Alert.AlertType.ERROR); erro.setContentText("Adicione itens ao carrinho primeiro!"); erro.showAndWait();
                 return;
             }
 
-            // ANIMAÇÃO DE CONFIRMAÇÃO (IDÊNTICA À DA TELA LOGIN E GERENTE)
-            cartao.getChildren().clear();
-            Label check = new Label("✔️"); check.setStyle("-fx-font-size: 60px; -fx-text-fill: #2ecc71;");
-            Label sucesso = new Label("Pedido Confirmado!"); sucesso.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
-            Label msg = new Label("A cozinha já está preparando."); msg.setStyle("-fx-font-size: 14px; -fx-text-fill: #7f8c8d;");
+            try {
+                // MÁGICA: O pedido é salvo no backend!
+                pedidoController.finalizarPedido((Cliente) clienteLogado, carrinho);
 
-            cartao.setAlignment(Pos.CENTER);
-            cartao.getChildren().addAll(check, sucesso, msg);
+                cartao.getChildren().clear();
+                Label check = new Label("✔️"); check.setStyle("-fx-font-size: 60px; -fx-text-fill: #2ecc71;");
+                Label sucesso = new Label("Pedido Confirmado!"); sucesso.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+                Label msg = new Label("A cozinha já está preparando."); msg.setStyle("-fx-font-size: 14px; -fx-text-fill: #7f8c8d;");
 
-            PauseTransition delay = new PauseTransition(Duration.seconds(3));
-            delay.setOnFinished(ev -> {
-                // Esvazia carrinho e volta
-                carrinho.clear();
-                Stage stage = (Stage) telaPrincipal.getScene().getWindow();
-                stage.setScene(new Scene(new TelaClienteHome(clienteLogado).getLayout(), 1100, 700));
-            });
-            delay.play();
+                cartao.setAlignment(Pos.CENTER); cartao.getChildren().addAll(check, sucesso, msg);
+
+                PauseTransition delay = new PauseTransition(Duration.seconds(3));
+                delay.setOnFinished(ev -> {
+                    carrinho.clear(); // Limpa carrinho
+                    // Lança para a tela de histórico
+                    Stage stage = (Stage) telaPrincipal.getScene().getWindow();
+                    stage.setScene(new Scene(new TelaHistoricoPedidosCliente(clienteLogado).getLayout(), 1100, 700));
+                });
+                delay.play();
+
+            } catch (Exception ex) {
+                Alert erro = new Alert(Alert.AlertType.ERROR); erro.setContentText(ex.getMessage()); erro.showAndWait();
+            }
         });
 
         cartao.getChildren().addAll(lblTit, subBox, taxaBox, new Separator(), totBox, btnFinalizar);
         return cartao;
     }
 
-    public BorderPane getLayout() {
-        return telaPrincipal;
-    }
+    public BorderPane getLayout() { return telaPrincipal; }
 }
