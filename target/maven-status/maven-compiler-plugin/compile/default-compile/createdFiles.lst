@@ -1,4 +1,5 @@
 br\edu\ifpb\ads\foodjava\repository\RestauranteRepository.class
+br\edu\ifpb\ads\foodjava\view\TelaCarrinho.class
 br\edu\ifpb\ads\foodjava\exceptions\PrecoInvalidoException.class
 br\edu\ifpb\ads\foodjava\view\TelaConfiguracaoRestaurante.class
 br\edu\ifpb\ads\foodjava\view\TelaLogin.class
