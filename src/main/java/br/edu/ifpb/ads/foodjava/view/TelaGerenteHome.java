@@ -39,7 +39,6 @@ public class TelaGerenteHome {
     private Button btnPedidos;
     private Button btnCardapio;
 
-    // Colunas do Kanban
     private VBox colPendentes;
     private VBox colPreparo;
     private VBox colEntregues;
@@ -113,7 +112,7 @@ public class TelaGerenteHome {
     }
 
     // ==========================================
-    // ABA 1: KANBAN FUNCIONAL
+    // ABA 1: KANBAN
     // ==========================================
     private void abrirAbaPedidos() {
         atualizarBotoesMenu(btnPedidos);
@@ -131,6 +130,15 @@ public class TelaGerenteHome {
         colPreparo = criarColunaKanban("👨‍🍳 Em Preparo", "#3498db");
         colEntregues = criarColunaKanban("✅ Entregues", "#2ecc71");
 
+        // NOVO: Botão para limpar a coluna de Entregues
+        Button btnLimparEntregues = new Button("🧹 Limpar Lista");
+        btnLimparEntregues.setStyle("-fx-background-color: transparent; -fx-text-fill: #7f8c8d; -fx-cursor: hand;");
+        btnLimparEntregues.setOnAction(e -> {
+            // Remove tudo da tela que for da classe VBox (que são os cartões)
+            colEntregues.getChildren().removeIf(node -> node instanceof VBox);
+        });
+        colEntregues.getChildren().add(btnLimparEntregues);
+
         HBox.setHgrow(colPendentes, Priority.ALWAYS);
         HBox.setHgrow(colPreparo, Priority.ALWAYS);
         HBox.setHgrow(colEntregues, Priority.ALWAYS);
@@ -143,20 +151,20 @@ public class TelaGerenteHome {
         scroll.setStyle("-fx-background-color: transparent; -fx-background-insets: 0;");
         telaPrincipal.setCenter(scroll);
 
-        // Preenche o Kanban com dados reais
         atualizarKanban();
     }
 
     private void atualizarKanban() {
-        // Limpa os cartões antigos (mantém apenas o título da coluna)
         colPendentes.getChildren().removeIf(node -> node instanceof VBox);
         colPreparo.getChildren().removeIf(node -> node instanceof VBox);
+
+        // Protege o botão de limpar na coluna de entregues
         colEntregues.getChildren().removeIf(node -> node instanceof VBox);
 
         List<Pedido> pedidos = pedidoController.listarTodosPedidos();
 
         for (Pedido p : pedidos) {
-            if (p.getStatus() == StatusPedido.CANCELADO) continue; // Ignora cancelados
+            if (p.getStatus() == StatusPedido.CANCELADO) continue;
 
             VBox cartao = criarCartaoPedido(p);
 
@@ -184,13 +192,11 @@ public class TelaGerenteHome {
     private VBox criarCartaoPedido(Pedido p) {
         VBox cartao = new VBox(8);
         cartao.setStyle("-fx-background-color: white; -fx-background-radius: 8px; -fx-padding: 15;");
-        DropShadow sombra = new DropShadow(); sombra.setColor(Color.rgb(0, 0, 0, 0.1));
-        cartao.setEffect(sombra);
+        DropShadow sombra = new DropShadow(); sombra.setColor(Color.rgb(0, 0, 0, 0.1)); cartao.setEffect(sombra);
 
         Label lblCliente = new Label("#" + p.getId() + " - " + p.getCliente().getNome());
         lblCliente.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #2c3e50;");
 
-        // Constrói o resumo do pedido (Ex: "2x Pizza, 1x Coca")
         StringBuilder resumo = new StringBuilder();
         for (Map.Entry<ItemCardapio, Integer> entry : p.getItens().entrySet()) {
             resumo.append(entry.getValue()).append("x ").append(entry.getKey().getNome()).append("\n");
@@ -203,7 +209,6 @@ public class TelaGerenteHome {
 
         cartao.getChildren().addAll(lblCliente, lblResumo, lblStatus);
 
-        // Só exibe botão de avançar se não estiver entregue
         if (p.getStatus() != StatusPedido.ENTREGUE) {
             Button btnAvancar = new Button("Avançar Status ➔");
             btnAvancar.setMaxWidth(Double.MAX_VALUE);
@@ -212,7 +217,7 @@ public class TelaGerenteHome {
             btnAvancar.setOnAction(e -> {
                 try {
                     pedidoController.avancarStatusPedido(p);
-                    atualizarKanban(); // Recarrega a tela
+                    atualizarKanban();
                 } catch (Exception ex) {
                     mostrarAlertaErro(ex.getMessage());
                 }
@@ -232,7 +237,6 @@ public class TelaGerenteHome {
         VBox layoutCentral = new VBox(25);
         layoutCentral.setPadding(new Insets(40));
 
-        // Título e Botão de Importar JSON lado a lado
         Label tituloAba = new Label("Gerenciamento de Cardápio");
         tituloAba.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
 
@@ -242,7 +246,6 @@ public class TelaGerenteHome {
         Button btnImportar = new Button("📥 Importar JSON");
         btnImportar.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-pref-height: 40px; -fx-background-radius: 8px; -fx-cursor: hand; -fx-padding: 0 20 0 20;");
 
-        // Ação de Importar Arquivo
         btnImportar.setOnAction(e -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Selecione o arquivo do Cardápio");
@@ -257,6 +260,7 @@ public class TelaGerenteHome {
                     alerta.setHeaderText(null);
                     alerta.setContentText("O cardápio foi importado com sucesso!");
                     alerta.showAndWait();
+                    abrirAbaCardapio(); // Recarrega a aba inteira para mostrar novos itens
                 } catch (Exception ex) {
                     mostrarAlertaErro("Erro ao importar: " + ex.getMessage());
                 }
@@ -274,12 +278,65 @@ public class TelaGerenteHome {
 
         montarFormularioCardapio(cartaoFormulario);
 
-        layoutCentral.getChildren().addAll(topoBox, cartaoFormulario);
+        // NOVO: SESSÃO DE LISTAGEM E REMOÇÃO DE ITENS DO CARDÁPIO
+        VBox cartaoLista = new VBox(15);
+        cartaoLista.setPadding(new Insets(30));
+        cartaoLista.setStyle("-fx-background-color: white; -fx-background-radius: 12px;");
+        cartaoLista.setEffect(new DropShadow(15, Color.rgb(0,0,0,0.1)));
+
+        Label lblLista = new Label("Itens Cadastrados no Cardápio");
+        lblLista.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+        cartaoLista.getChildren().add(lblLista);
+
+        VBox containerItensCadastrados = new VBox(10);
+        atualizarListaCardapio(containerItensCadastrados);
+        cartaoLista.getChildren().add(containerItensCadastrados);
+
+        layoutCentral.getChildren().addAll(topoBox, cartaoFormulario, cartaoLista);
 
         ScrollPane scroll = new ScrollPane(layoutCentral);
         scroll.setFitToWidth(true);
         scroll.setStyle("-fx-background-color: transparent; -fx-background-insets: 0;");
         telaPrincipal.setCenter(scroll);
+    }
+
+    private void atualizarListaCardapio(VBox container) {
+        container.getChildren().clear();
+        List<ItemCardapio> itens = cardapioController.listarCardapioCompleto();
+
+        if (itens == null || itens.isEmpty()) {
+            container.getChildren().add(new Label("Nenhum item cadastrado no sistema ainda."));
+            return;
+        }
+
+        for (ItemCardapio item : itens) {
+            HBox linha = new HBox(15);
+            linha.setAlignment(Pos.CENTER_LEFT);
+            linha.setStyle("-fx-border-color: #ecf0f1; -fx-border-width: 0 0 1 0; -fx-padding: 10;");
+
+            Label lblNome = new Label(item.getNome());
+            lblNome.setStyle("-fx-font-weight: bold; -fx-font-size: 15px;");
+            Label lblPreco = new Label(String.format("R$ %.2f", item.getPreco()));
+
+            Region espacador = new Region();
+            HBox.setHgrow(espacador, Priority.ALWAYS);
+
+            Button btnRemover = new Button("🗑 Remover");
+            btnRemover.setStyle("-fx-background-color: transparent; -fx-text-fill: #e74c3c; -fx-cursor: hand;");
+
+            // AÇÃO DE REMOVER
+            btnRemover.setOnAction(e -> {
+                try {
+                    cardapioController.removerItem(item);
+                    atualizarListaCardapio(container); // Refresh local
+                } catch (Exception ex) {
+                    mostrarAlertaErro(ex.getMessage());
+                }
+            });
+
+            linha.getChildren().addAll(lblNome, lblPreco, espacador, btnRemover);
+            container.getChildren().add(linha);
+        }
     }
 
     private void montarFormularioCardapio(VBox cartaoFormulario) {
@@ -340,7 +397,7 @@ public class TelaGerenteHome {
         PauseTransition delay = new PauseTransition(Duration.seconds(2.0));
         delay.setOnFinished(ev -> {
             cartaoFormulario.setAlignment(Pos.TOP_LEFT);
-            montarFormularioCardapio(cartaoFormulario);
+            abrirAbaCardapio(); // Recarrega tudo para atualizar a lista embaixo
         });
         delay.play();
     }
