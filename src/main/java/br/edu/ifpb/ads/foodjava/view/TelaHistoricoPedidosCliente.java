@@ -44,10 +44,24 @@ public class TelaHistoricoPedidosCliente {
             stage.setScene(new Scene(new TelaClienteHome(clienteLogado).getLayout(), 1100, 700));
         });
 
+        // CORREÇÃO: Botão Limpar lê diretamente a "etiqueta" ID do cartão agora
+        Button btnLimparHistorico = new Button("🧹 Ocultar Finalizados");
+        btnLimparHistorico.setStyle("-fx-background-color: transparent; -fx-text-fill: #7f8c8d; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-border-color: #7f8c8d; -fx-border-width: 2px; -fx-border-radius: 8px; -fx-padding: 8 15 8 15;");
+        btnLimparHistorico.setOnAction(e -> {
+            painelPedidos.getChildren().removeIf(node -> {
+                String idCartao = node.getId();
+                return "ENTREGUE".equals(idCartao) || "CANCELADO".equals(idCartao);
+            });
+        });
+
         Label lblTitulo = new Label("Meus Pedidos");
         lblTitulo.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
 
-        VBox topo = new VBox(15, btnVoltar, lblTitulo);
+        Region espacadorTopo = new Region();
+        HBox.setHgrow(espacadorTopo, Priority.ALWAYS);
+
+        HBox botoesTopo = new HBox(15, btnVoltar, espacadorTopo, btnLimparHistorico);
+        VBox topo = new VBox(15, botoesTopo, lblTitulo);
         topo.setPadding(new Insets(0, 0, 20, 0));
         telaPrincipal.setTop(topo);
 
@@ -74,7 +88,6 @@ public class TelaHistoricoPedidosCliente {
             return;
         }
 
-        // Exibe de trás pra frente (mais novos primeiro)
         for (int i = meusPedidos.size() - 1; i >= 0; i--) {
             painelPedidos.getChildren().add(criarCartaoPedido(meusPedidos.get(i)));
         }
@@ -82,6 +95,10 @@ public class TelaHistoricoPedidosCliente {
 
     private VBox criarCartaoPedido(Pedido p) {
         VBox cartao = new VBox(10);
+
+        // CORREÇÃO: A etiqueta invisível que o botão "Ocultar" vai ler
+        cartao.setId(p.getStatus().name());
+
         cartao.setPadding(new Insets(20));
         cartao.setPrefWidth(320);
         cartao.setStyle("-fx-background-color: white; -fx-background-radius: 12px;");
@@ -105,7 +122,6 @@ public class TelaHistoricoPedidosCliente {
 
         cartao.getChildren().addAll(lblId, lblStatus, new Separator(), lblItens, new Separator(), lblTotal);
 
-        // Regra de Negócio: Cliente só cancela se estiver AGUARDANDO_CONFIRMACAO
         if (p.getStatus() == StatusPedido.AGUARDANDO_CONFIRMACAO) {
             Button btnCancelar = new Button("Cancelar Pedido");
             btnCancelar.setPrefWidth(Double.MAX_VALUE);
@@ -114,7 +130,7 @@ public class TelaHistoricoPedidosCliente {
             btnCancelar.setOnAction(e -> {
                 try {
                     pedidoController.cancelarPedido(p);
-                    carregarHistorico(); // Recarrega tela
+                    carregarHistorico();
                 } catch (Exception ex) {
                     Alert erro = new Alert(Alert.AlertType.ERROR); erro.setContentText(ex.getMessage()); erro.showAndWait();
                 }
@@ -127,10 +143,10 @@ public class TelaHistoricoPedidosCliente {
 
     private String getCorStatus(StatusPedido status) {
         switch (status) {
-            case AGUARDANDO_CONFIRMACAO: return "#f39c12"; // Laranja
-            case CONFIRMADO: case EM_PREPARO: case SAIU_PARA_ENTREGA: return "#3498db"; // Azul
-            case ENTREGUE: return "#2ecc71"; // Verde
-            case CANCELADO: return "#e74c3c"; // Vermelho
+            case AGUARDANDO_CONFIRMACAO: return "#f39c12";
+            case CONFIRMADO: case EM_PREPARO: case SAIU_PARA_ENTREGA: return "#3498db";
+            case ENTREGUE: return "#2ecc71";
+            case CANCELADO: return "#e74c3c";
             default: return "#7f8c8d";
         }
     }
