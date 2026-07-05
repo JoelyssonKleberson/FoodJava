@@ -41,7 +41,6 @@ public class TelaClienteHome {
 
     private List<Button> botoesCategorias;
 
-    // CORREÇÃO: Variável para impedir que a tela seja bombardeada de alertas
     private boolean alertaImagemMostrado = false;
 
     public TelaClienteHome(Usuario clienteLogado) {
@@ -186,23 +185,42 @@ public class TelaClienteHome {
 
         ImageView imgPrato = new ImageView();
         Image imagemFinal = null;
+        String imgPath = item.getImagemPath();
 
-        if (item.getImagemPath() != null && !item.getImagemPath().isEmpty()) {
+        // MÁGICA ATUALIZADA: Proteção contra formato WEBP e imagens corrompidas
+        if (imgPath != null && !imgPath.trim().isEmpty()) {
             try {
-                File file = new File(item.getImagemPath());
-                if (file.exists()) imagemFinal = new Image(file.toURI().toString());
+                if (imgPath.contains("/")) {
+                    imgPath = imgPath.substring(imgPath.lastIndexOf("/") + 1);
+                }
+
+                File fileFisico = new File("src/main/resources/images/" + imgPath);
+                if (fileFisico.exists()) {
+                    Image tempImg = new Image(fileFisico.toURI().toString());
+                    if (!tempImg.isError()) { // Checa se a imagem abriu com sucesso (não é webp falso)
+                        imagemFinal = tempImg;
+                    }
+                } else {
+                    InputStream is = getClass().getResourceAsStream("/images/" + imgPath);
+                    if (is != null) {
+                        Image tempImg = new Image(is);
+                        if (!tempImg.isError()) { // Proteção extra para o classpath
+                            imagemFinal = tempImg;
+                        }
+                    }
+                }
             } catch (Exception ignored) {}
         }
 
+        // Se ainda for nulo (ou deu erro porque era WebP), tenta usar a comida padrão
         if (imagemFinal == null) {
             try {
-                InputStream is = getClass().getResourceAsStream("/images/comida_padrao.jpg");
-                if (is != null) {
-                    imagemFinal = new Image(is);
+                InputStream isPadrao = getClass().getResourceAsStream("/images/comida_padrao.jpg");
+                if (isPadrao != null) {
+                    imagemFinal = new Image(isPadrao);
                 } else {
-                    // CORREÇÃO: Substituição do System.out pela janela visual
                     if (!alertaImagemMostrado) {
-                        mostrarAlertaAviso("A imagem padrão de comida não foi encontrada na pasta do projeto.");
+                        mostrarAlertaErro("Aviso do Sistema: A imagem padrão (comida_padrao.jpg) não foi encontrada na sua pasta images do projeto.");
                         alertaImagemMostrado = true;
                     }
                 }
@@ -255,16 +273,10 @@ public class TelaClienteHome {
         return cartao;
     }
 
-    // NOVO: Método de Janela Elegante para o erro de imagem
-    private void mostrarAlertaAviso(String mensagem) {
+    private void mostrarAlertaErro(String mensagem) {
         Alert alerta = new Alert(Alert.AlertType.WARNING);
-        alerta.setTitle("Aviso de Imagem");
-        alerta.setHeaderText(null);
-        alerta.setContentText(mensagem);
-        alerta.showAndWait();
+        alerta.setTitle("Atenção"); alerta.setHeaderText(null); alerta.setContentText(mensagem); alerta.showAndWait();
     }
 
-    public BorderPane getLayout() {
-        return telaPrincipal;
-    }
+    public BorderPane getLayout() { return telaPrincipal; }
 }
