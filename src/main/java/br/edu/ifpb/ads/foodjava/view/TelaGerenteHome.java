@@ -7,6 +7,7 @@ import br.edu.ifpb.ads.foodjava.repository.CardapioRepository;
 import br.edu.ifpb.ads.foodjava.repository.CardapioRepositoryJsonImpl;
 import br.edu.ifpb.ads.foodjava.repository.PedidoRepository;
 import br.edu.ifpb.ads.foodjava.repository.PedidoRepositoryJsonImpl;
+import javafx.animation.PauseTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -15,6 +16,7 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 public class TelaGerenteHome {
 
@@ -25,6 +27,10 @@ public class TelaGerenteHome {
     private BorderPane telaPrincipal;
     private Usuario gerenteLogado;
     private CardapioController cardapioController;
+
+    // Elementos de controle de abas
+    private Button btnPedidos;
+    private Button btnCardapio;
 
     public TelaGerenteHome(Usuario gerenteLogado) {
         this.gerenteLogado = gerenteLogado;
@@ -37,12 +43,11 @@ public class TelaGerenteHome {
         telaPrincipal.setStyle("-fx-background-color: " + COR_FUNDO + ";");
 
         telaPrincipal.setLeft(criarSidebar());
-        telaPrincipal.setCenter(criarAbaCardapio());
+
+        // Inicia na aba de pedidos (Kanban)
+        abrirAbaPedidos();
     }
 
-    // ==========================================
-    // 1. MENU LATERAL (SIDEBAR)
-    // ==========================================
     private VBox criarSidebar() {
         VBox sidebar = new VBox(20);
         sidebar.setPrefWidth(250);
@@ -58,33 +63,26 @@ public class TelaGerenteHome {
         VBox boxHeader = new VBox(5, lblAdmin, lblNomeGerente);
         boxHeader.setPadding(new Insets(0, 0, 30, 0));
 
-        Button btnPedidos = criarBotaoSidebar("📋 Pedidos do Dia");
+        btnPedidos = criarBotaoSidebar("📋 Pedidos do Dia");
+        btnCardapio = criarBotaoSidebar("🍔 Gerenciar Cardápio");
 
-        Button btnCardapio = criarBotaoSidebar("🍔 Gerenciar Cardápio");
-        btnCardapio.setStyle("-fx-background-color: " + COR_VERMELHO + "; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-alignment: CENTER_LEFT; -fx-padding: 10 20 10 20; -fx-background-radius: 8px; -fx-cursor: hand;");
+        btnPedidos.setOnAction(e -> abrirAbaPedidos());
+        btnCardapio.setOnAction(e -> abrirAbaCardapio());
 
         Region espacador = new Region();
         VBox.setVgrow(espacador, Priority.ALWAYS);
 
-        // IMPLEMENTAÇÃO: Botão Sair com Borda Vermelha (Retângulo ao redor)
         Button btnSair = new Button("🚪 Sair do Sistema");
         btnSair.setMaxWidth(Double.MAX_VALUE);
         btnSair.setStyle(
-                "-fx-background-color: transparent; " +
-                        "-fx-text-fill: #e74c3c; " +
-                        "-fx-font-size: 15px; " +
-                        "-fx-font-weight: bold; " +
-                        "-fx-alignment: CENTER_LEFT; " +
-                        "-fx-padding: 10 20 10 20; " +
-                        "-fx-cursor: hand; " +
-                        "-fx-border-color: #e74c3c; " + // Retângulo Vermelho
-                        "-fx-border-width: 2px; " +
-                        "-fx-border-radius: 8px;"
+                "-fx-background-color: transparent; -fx-text-fill: #e74c3c; -fx-font-size: 15px; -fx-font-weight: bold; -fx-alignment: CENTER_LEFT; -fx-padding: 10 20 10 20; -fx-cursor: hand; -fx-border-color: #e74c3c; -fx-border-width: 2px; -fx-border-radius: 8px;"
         );
 
         btnSair.setOnAction(e -> {
             Stage stage = (Stage) btnSair.getScene().getWindow();
-            stage.setScene(new Scene(new TelaLogin().getLayout(), 1100, 700));
+            TelaSplash splash = new TelaSplash();
+            stage.setScene(new Scene(splash.getLayout(), 1100, 700));
+            splash.iniciarTransicaoEroteamento(stage); // Recomeça o sistema!
         });
 
         sidebar.getChildren().addAll(boxHeader, btnPedidos, btnCardapio, espacador, btnSair);
@@ -98,10 +96,92 @@ public class TelaGerenteHome {
         return btn;
     }
 
+    private void atualizarBotoesMenu(Button ativo) {
+        String estiloInativo = "-fx-background-color: transparent; -fx-text-fill: #ecf0f1; -fx-font-size: 16px; -fx-font-weight: bold; -fx-alignment: CENTER_LEFT; -fx-padding: 10 20 10 20; -fx-cursor: hand; -fx-background-radius: 8px;";
+        String estiloAtivo = "-fx-background-color: " + COR_VERMELHO + "; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-alignment: CENTER_LEFT; -fx-padding: 10 20 10 20; -fx-background-radius: 8px; -fx-cursor: hand;";
+
+        btnPedidos.setStyle(estiloInativo);
+        btnCardapio.setStyle(estiloInativo);
+        ativo.setStyle(estiloAtivo);
+    }
+
     // ==========================================
-    // 2. ABA: GERENCIAR CARDÁPIO
+    // ABA 1: KANBAN DE PEDIDOS DO DIA
     // ==========================================
-    private ScrollPane criarAbaCardapio() {
+    private void abrirAbaPedidos() {
+        atualizarBotoesMenu(btnPedidos);
+
+        VBox layoutCentral = new VBox(25);
+        layoutCentral.setPadding(new Insets(40));
+
+        Label tituloAba = new Label("Pedidos em Andamento");
+        tituloAba.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+
+        HBox kanbanBoard = new HBox(20);
+        kanbanBoard.setAlignment(Pos.TOP_CENTER);
+
+        // Colunas do Kanban
+        VBox colPendentes = criarColunaKanban("⏳ Pendentes", "#f39c12");
+        VBox colPreparo = criarColunaKanban("👨‍🍳 Em Preparo", "#3498db");
+        VBox colEntregues = criarColunaKanban("✅ Entregues", "#2ecc71");
+
+        // Mock visual de como os cartões de pedido ficam na coluna
+        colPendentes.getChildren().add(criarCartaoPedido("#001 - João Silva", "1x Pizza, 2x Coca", "Aguardando"));
+        colPreparo.getChildren().add(criarCartaoPedido("#002 - Maria", "1x X-Tudo", "Em Preparo"));
+
+        HBox.setHgrow(colPendentes, Priority.ALWAYS);
+        HBox.setHgrow(colPreparo, Priority.ALWAYS);
+        HBox.setHgrow(colEntregues, Priority.ALWAYS);
+        kanbanBoard.getChildren().addAll(colPendentes, colPreparo, colEntregues);
+
+        layoutCentral.getChildren().addAll(tituloAba, kanbanBoard);
+
+        ScrollPane scroll = new ScrollPane(layoutCentral);
+        scroll.setFitToWidth(true);
+        scroll.setStyle("-fx-background-color: transparent; -fx-background-insets: 0;");
+        telaPrincipal.setCenter(scroll);
+    }
+
+    private VBox criarColunaKanban(String titulo, String corCabelho) {
+        VBox coluna = new VBox(15);
+        coluna.setStyle("-fx-background-color: #e0e6ed; -fx-background-radius: 10px; -fx-padding: 15;");
+
+        Label lblTitulo = new Label(titulo);
+        lblTitulo.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: " + corCabelho + ";");
+        lblTitulo.setMaxWidth(Double.MAX_VALUE);
+        lblTitulo.setAlignment(Pos.CENTER);
+
+        coluna.getChildren().add(lblTitulo);
+        return coluna;
+    }
+
+    private VBox criarCartaoPedido(String clienteInfo, String resumoItens, String statusAtual) {
+        VBox cartao = new VBox(8);
+        cartao.setStyle("-fx-background-color: white; -fx-background-radius: 8px; -fx-padding: 15;");
+        DropShadow sombra = new DropShadow();
+        sombra.setColor(Color.rgb(0, 0, 0, 0.1));
+        cartao.setEffect(sombra);
+
+        Label lblCliente = new Label(clienteInfo);
+        lblCliente.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #2c3e50;");
+
+        Label lblResumo = new Label(resumoItens);
+        lblResumo.setStyle("-fx-font-size: 13px; -fx-text-fill: #7f8c8d;");
+
+        Button btnAvancar = new Button("Avançar Status ➔");
+        btnAvancar.setMaxWidth(Double.MAX_VALUE);
+        btnAvancar.setStyle("-fx-background-color: " + COR_VERMELHO + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 5px;");
+
+        cartao.getChildren().addAll(lblCliente, lblResumo, btnAvancar);
+        return cartao;
+    }
+
+    // ==========================================
+    // ABA 2: GERENCIAR CARDÁPIO
+    // ==========================================
+    private void abrirAbaCardapio() {
+        atualizarBotoesMenu(btnCardapio);
+
         VBox layoutCentral = new VBox(25);
         layoutCentral.setPadding(new Insets(40));
 
@@ -111,11 +191,22 @@ public class TelaGerenteHome {
         VBox cartaoFormulario = new VBox(20);
         cartaoFormulario.setPadding(new Insets(30));
         cartaoFormulario.setStyle("-fx-background-color: white; -fx-background-radius: 12px;");
-
         DropShadow sombra = new DropShadow();
         sombra.setColor(Color.rgb(0, 0, 0, 0.1));
-        sombra.setRadius(15);
         cartaoFormulario.setEffect(sombra);
+
+        montarFormularioCardapio(cartaoFormulario);
+
+        layoutCentral.getChildren().addAll(tituloAba, cartaoFormulario);
+
+        ScrollPane scroll = new ScrollPane(layoutCentral);
+        scroll.setFitToWidth(true);
+        scroll.setStyle("-fx-background-color: transparent; -fx-background-insets: 0;");
+        telaPrincipal.setCenter(scroll);
+    }
+
+    private void montarFormularioCardapio(VBox cartaoFormulario) {
+        cartaoFormulario.getChildren().clear();
 
         Label lblNovoItem = new Label("Adicionar Novo Prato");
         lblNovoItem.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: " + COR_VERMELHO + ";");
@@ -148,7 +239,6 @@ public class TelaGerenteHome {
 
         HBox linha3 = new HBox(20, criarBoxComLabel("Preço (R$)", txtPreco));
         linha3.setAlignment(Pos.CENTER_LEFT);
-
         Region espacadorBtn = new Region();
         HBox.setHgrow(espacadorBtn, Priority.ALWAYS);
         linha3.getChildren().addAll(espacadorBtn, btnSalvar);
@@ -166,31 +256,40 @@ public class TelaGerenteHome {
 
                 cardapioController.adicionarItem(nome, desc, preco, cat, true, null);
 
-                Alert sucesso = new Alert(Alert.AlertType.INFORMATION);
-                sucesso.setTitle("Sucesso");
-                sucesso.setHeaderText(null);
-                sucesso.setContentText(nome + " adicionado ao cardápio com sucesso!");
-                sucesso.showAndWait();
+                // ANIMAÇÃO DE SUCESSO INTERNA (Sem Alert Feio)
+                mostrarSucessoInterno(cartaoFormulario, nome);
 
-                txtNome.clear();
-                txtDescricao.clear();
-                txtPreco.clear();
-                cbCategoria.setValue(null);
-
-            } catch (NumberFormatException ex) {
-                mostrarAlertaErro("Preço inválido! Digite apenas números e use ponto ou vírgula.");
             } catch (Exception ex) {
-                mostrarAlertaErro(ex.getMessage());
+                Alert alerta = new Alert(Alert.AlertType.ERROR);
+                alerta.setTitle("Erro");
+                alerta.setHeaderText(null);
+                alerta.setContentText("Preço inválido ou erro: " + ex.getMessage());
+                alerta.showAndWait();
             }
         });
 
         cartaoFormulario.getChildren().addAll(lblNovoItem, linha1, boxDesc, linha3);
-        layoutCentral.getChildren().addAll(tituloAba, cartaoFormulario);
+    }
 
-        ScrollPane scroll = new ScrollPane(layoutCentral);
-        scroll.setFitToWidth(true);
-        scroll.setStyle("-fx-background-color: transparent; -fx-background-insets: 0;");
-        return scroll;
+    private void mostrarSucessoInterno(VBox cartaoFormulario, String nomePrato) {
+        cartaoFormulario.getChildren().clear();
+
+        Label check = new Label("✔️");
+        check.setStyle("-fx-font-size: 50px; -fx-text-fill: #2ecc71;");
+        Label lblSucesso = new Label("Prato Adicionado!");
+        lblSucesso.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+        Label lblMsg = new Label(nomePrato + " já está no cardápio.");
+        lblMsg.setStyle("-fx-font-size: 15px; -fx-text-fill: #7f8c8d;");
+
+        cartaoFormulario.setAlignment(Pos.CENTER);
+        cartaoFormulario.getChildren().addAll(check, lblSucesso, lblMsg);
+
+        PauseTransition delay = new PauseTransition(Duration.seconds(2.5));
+        delay.setOnFinished(ev -> {
+            cartaoFormulario.setAlignment(Pos.TOP_LEFT);
+            montarFormularioCardapio(cartaoFormulario); // Remonta o form vazio
+        });
+        delay.play();
     }
 
     private void estilizarCampo(Control campo) {
@@ -201,18 +300,8 @@ public class TelaGerenteHome {
         Label lbl = new Label(textoLabel);
         lbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #7f8c8d; -fx-font-size: 13px;");
         VBox box = new VBox(5, lbl, controle);
-        if (controle instanceof TextField) {
-            HBox.setHgrow(box, Priority.ALWAYS);
-        }
+        if (controle instanceof TextField) HBox.setHgrow(box, Priority.ALWAYS);
         return box;
-    }
-
-    private void mostrarAlertaErro(String mensagem) {
-        Alert alerta = new Alert(Alert.AlertType.ERROR);
-        alerta.setTitle("Erro");
-        alerta.setHeaderText(null);
-        alerta.setContentText(mensagem);
-        alerta.showAndWait();
     }
 
     public BorderPane getLayout() {
