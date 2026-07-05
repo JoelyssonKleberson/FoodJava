@@ -39,8 +39,10 @@ public class TelaClienteHome {
     private Button btnCarrinho;
     private FlowPane painelPratos;
 
-    // Lista de botões de categoria para controle visual
     private List<Button> botoesCategorias;
+
+    // CORREÇÃO: Variável para impedir que a tela seja bombardeada de alertas
+    private boolean alertaImagemMostrado = false;
 
     public TelaClienteHome(Usuario clienteLogado) {
         this.clienteLogado = clienteLogado;
@@ -75,7 +77,6 @@ public class TelaClienteHome {
         Region espacador = new Region();
         HBox.setHgrow(espacador, Priority.ALWAYS);
 
-        // BOTÃO HISTÓRICO DE PEDIDOS (NOVO!)
         Button btnPedidos = new Button("📄 Meus Pedidos");
         btnPedidos.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-border-color: white; -fx-border-radius: 20px; -fx-padding: 8 15 8 15;");
         btnPedidos.setOnAction(e -> {
@@ -84,7 +85,6 @@ public class TelaClienteHome {
             stage.setScene(new Scene(tela.getLayout(), 1100, 700));
         });
 
-        // BOTÃO SAIR (Vai pro Splash)
         Button btnSair = new Button("Sair");
         btnSair.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-border-color: white; -fx-border-radius: 20px; -fx-padding: 8 20 8 20;");
         btnSair.setOnAction(e -> {
@@ -113,7 +113,6 @@ public class TelaClienteHome {
         Label tituloCat = new Label("O que vamos pedir hoje?");
         tituloCat.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
 
-        // FILTROS FUNCIONAIS
         Button btnTodos = criarBotaoCategoria("🍔 Todos");
         Button btnEntrada = criarBotaoCategoria("🥗 Entrada");
         Button btnPrincipal = criarBotaoCategoria("🍛 Prato Principal");
@@ -122,14 +121,13 @@ public class TelaClienteHome {
 
         botoesCategorias = Arrays.asList(btnTodos, btnEntrada, btnPrincipal, btnSobremesa, btnBebidas);
 
-        // Ações de Filtragem
         btnTodos.setOnAction(e -> { destacarBotaoCat(btnTodos); carregarPratosDoBanco(null); });
         btnEntrada.setOnAction(e -> { destacarBotaoCat(btnEntrada); carregarPratosDoBanco(Categoria.ENTRADA); });
         btnPrincipal.setOnAction(e -> { destacarBotaoCat(btnPrincipal); carregarPratosDoBanco(Categoria.PRATO_PRINCIPAL); });
         btnSobremesa.setOnAction(e -> { destacarBotaoCat(btnSobremesa); carregarPratosDoBanco(Categoria.SOBREMESA); });
         btnBebidas.setOnAction(e -> { destacarBotaoCat(btnBebidas); carregarPratosDoBanco(Categoria.BEBIDAS); });
 
-        destacarBotaoCat(btnTodos); // Ativa o "Todos" por padrão
+        destacarBotaoCat(btnTodos);
 
         HBox categorias = new HBox(15, btnTodos, btnEntrada, btnPrincipal, btnSobremesa, btnBebidas);
 
@@ -175,7 +173,7 @@ public class TelaClienteHome {
     }
 
     private Button criarBotaoCategoria(String nome) {
-        return new Button(nome); // O estilo é aplicado pelo destacarBotaoCat()
+        return new Button(nome);
     }
 
     private VBox criarCartaoProduto(ItemCardapio item) {
@@ -186,24 +184,37 @@ public class TelaClienteHome {
         DropShadow sombra = new DropShadow(); sombra.setColor(Color.rgb(0, 0, 0, 0.08)); sombra.setRadius(15);
         cartao.setEffect(sombra);
 
-        // LÓGICA INTELIGENTE DE IMAGEM
         ImageView imgPrato = new ImageView();
         Image imagemFinal = null;
 
         if (item.getImagemPath() != null && !item.getImagemPath().isEmpty()) {
             try {
-                // Tenta carregar imagem externa do JSON
                 File file = new File(item.getImagemPath());
                 if (file.exists()) imagemFinal = new Image(file.toURI().toString());
             } catch (Exception ignored) {}
         }
-        // Fallback (Se não tem imagem no JSON ou arquivo não existe)
+
         if (imagemFinal == null) {
-            InputStream is = getClass().getResourceAsStream("/images/comida_padrao.jpg");
-            if (is != null) imagemFinal = new Image(is);
+            try {
+                InputStream is = getClass().getResourceAsStream("/images/comida_padrao.jpg");
+                if (is != null) {
+                    imagemFinal = new Image(is);
+                } else {
+                    // CORREÇÃO: Substituição do System.out pela janela visual
+                    if (!alertaImagemMostrado) {
+                        mostrarAlertaAviso("A imagem padrão de comida não foi encontrada na pasta do projeto.");
+                        alertaImagemMostrado = true;
+                    }
+                }
+            } catch (Exception e) {}
         }
 
-        imgPrato.setImage(imagemFinal);
+        if (imagemFinal != null) {
+            imgPrato.setImage(imagemFinal);
+        } else {
+            imgPrato.setStyle("-fx-background-color: #dcdde1;");
+        }
+
         imgPrato.setFitWidth(190);
         imgPrato.setFitHeight(130);
 
@@ -242,6 +253,15 @@ public class TelaClienteHome {
 
         cartao.getChildren().addAll(imgPrato, lblTitulo, lblDesc, lblPreco, btnAdd);
         return cartao;
+    }
+
+    // NOVO: Método de Janela Elegante para o erro de imagem
+    private void mostrarAlertaAviso(String mensagem) {
+        Alert alerta = new Alert(Alert.AlertType.WARNING);
+        alerta.setTitle("Aviso de Imagem");
+        alerta.setHeaderText(null);
+        alerta.setContentText(mensagem);
+        alerta.showAndWait();
     }
 
     public BorderPane getLayout() {
