@@ -19,6 +19,7 @@ br\edu\ifpb\ads\foodjava\model\Pedido$1.class
 br\edu\ifpb\ads\foodjava\view\TelaClienteHome.class
 br\edu\ifpb\ads\foodjava\controller\CardapioController$1.class
 br\edu\ifpb\ads\foodjava\repository\UsuarioRepositoryJsonImpl$1.class
+br\edu\ifpb\ads\foodjava\view\TelaHistoricoPedidosCliente$1.class
 br\edu\ifpb\ads\foodjava\repository\UsuarioRepositoryJsonImpl.class
 br\edu\ifpb\ads\foodjava\view\TelaCadastrarCliente.class
 br\edu\ifpb\ads\foodjava\controller\RestauranteController.class
@@ -42,5 +43,6 @@ br\edu\ifpb\ads\foodjava\exceptions\StatusInvalidoException.class
 br\edu\ifpb\ads\foodjava\exceptions\ItemVinculadoException.class
 br\edu\ifpb\ads\foodjava\exceptions\SenhaInvalidaException.class
 br\edu\ifpb\ads\foodjava\repository\CardapioRepository.class
+br\edu\ifpb\ads\foodjava\view\TelaHistoricoPedidosCliente.class
 br\edu\ifpb\ads\foodjava\exceptions\CancelamentoNaoPermitidoException.class
 br\edu\ifpb\ads\foodjava\exceptions\ArquivoImportacaoException.class
