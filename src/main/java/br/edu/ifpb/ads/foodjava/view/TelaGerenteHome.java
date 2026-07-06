@@ -368,7 +368,6 @@ public class TelaGerenteHome {
 
                 if (nome.trim().isEmpty() || cat == null) throw new IllegalArgumentException("Preencha todos os campos obrigatórios!");
 
-                // O CÉREBRO DA IMAGEM: Ele salva APENAS o nome do arquivo, e garante que tenha extensão!
                 String imgNome = txtImagem.getText().trim();
                 String nomeArquivoImagem = null;
 
@@ -376,7 +375,7 @@ public class TelaGerenteHome {
                     if (imgNome.toLowerCase().endsWith(".jpg")) {
                         nomeArquivoImagem = imgNome;
                     } else {
-                        nomeArquivoImagem = imgNome + ".jpg"; // Adiciona .jpg automático se o cara esquecer
+                        nomeArquivoImagem = imgNome + ".jpg";
                     }
                 }
 

@@ -9,7 +9,6 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage stage) {
-        // Agora o MainApp SEMPRE abre o Splash primeiro, mantendo a imersão do usuário
         TelaSplash splashView = new TelaSplash();
         Scene cenaInicial = new Scene(splashView.getLayout(), 1100, 700);
 
@@ -18,7 +17,6 @@ public class MainApp extends Application {
         stage.setResizable(false);
         stage.show();
 
-        // A lógica de roteamento agora fica dentro do Splash
         splashView.iniciarTransicaoEroteamento(stage);
     }
 

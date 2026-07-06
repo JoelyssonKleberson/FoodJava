@@ -27,7 +27,7 @@ public class TelaLogin {
 
     private AutenticacaoController loginController;
     private HBox telaPrincipal;
-    private VBox cartaoLogin; // Mantendo a referência para a tela de sucesso
+    private VBox cartaoLogin;
 
     public TelaLogin() {
         UsuarioRepository repo = new UsuarioRepositoryJsonImpl();
@@ -78,11 +78,11 @@ public class TelaLogin {
         String estiloCampoSenha = estiloCampo + " -fx-padding: 0 40 0 10;";
 
         TextField txtEmail = new TextField();
-        txtEmail.setPromptText("exemplo@gmail.com"); // A pedido do cliente
+        txtEmail.setPromptText("exemplo@gmail.com");
         txtEmail.setStyle(estiloCampo);
 
         PasswordField txtSenhaOculta = new PasswordField();
-        txtSenhaOculta.setPromptText("Mín. 8 caracteres e 1 número"); // A pedido do cliente
+        txtSenhaOculta.setPromptText("Mín. 8 caracteres e 1 número");
         txtSenhaOculta.setStyle(estiloCampoSenha);
 
         TextField txtSenhaVisivel = new TextField();
@@ -140,7 +140,6 @@ public class TelaLogin {
         telaPrincipal.getChildren().addAll(painelImagemEsquerdo, painelFormularioDireito);
     }
 
-    // NOVO: Tela de Sucesso Embutida no Cartão! (Sem alertas)
     private void mostrarTelaSucessoEredirecionar(Usuario usuarioEncontrado) {
         cartaoLogin.getChildren().clear();
 
@@ -156,12 +155,10 @@ public class TelaLogin {
         cartaoLogin.getChildren().addAll(check, lblSucesso, lblMsg);
         cartaoLogin.setAlignment(Pos.CENTER);
 
-        // Espera 3s e manda para a Home certa
         PauseTransition delay = new PauseTransition(Duration.seconds(3));
         delay.setOnFinished(e -> {
             Stage stage = (Stage) telaPrincipal.getScene().getWindow();
 
-            // O Roteador Inteligente: Ele checa a instância da classe!
             if (usuarioEncontrado instanceof Gerente) {
                 TelaGerenteHome telaGerente = new TelaGerenteHome(usuarioEncontrado);
                 stage.setScene(new Scene(telaGerente.getLayout(), 1100, 700));

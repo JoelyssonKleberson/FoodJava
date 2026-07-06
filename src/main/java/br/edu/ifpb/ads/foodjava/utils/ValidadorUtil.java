@@ -38,7 +38,6 @@ public final class ValidadorUtil {
         return calculoValidacaoCpf(cpf);
     }
 
-    // NOVO: Adicionado para o Wizard do Restaurante
     public static boolean isCnpjValido(String cnpj) {
         return calculoValidacaoCnpj(cnpj);
     }

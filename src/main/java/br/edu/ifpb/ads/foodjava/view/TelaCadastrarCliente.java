@@ -30,9 +30,8 @@ public class TelaCadastrarCliente {
     private Button btnProximo, btnVoltar;
 
     private TextField txtEmail, txtNome, txtCpf, txtWhatsApp, txtRua, txtNumero, txtBairro;
-    private PasswordField txtSenhaOculta; // Alterado para o sistema de olho
-    private TextField txtSenhaVisivel;    // Alterado para o sistema de olho
-
+    private PasswordField txtSenhaOculta;
+    private TextField txtSenhaVisivel;
     private boolean isUpdatingMask = false;
 
     public TelaCadastrarCliente() {
@@ -116,7 +115,6 @@ public class TelaCadastrarCliente {
 
         txtEmail = criarCampoTexto("E-mail", "exemplo@gmail.com");
 
-        // Sistema de Mostrar/Ocultar Senha também no Cadastro!
         String estiloCampoSenha = "-fx-pref-height: 45px; -fx-background-radius: 5px; -fx-font-size: 15px; -fx-border-color: #e0e0e0; -fx-border-radius: 5px; -fx-padding: 0 40 0 10;";
 
         txtSenhaOculta = new PasswordField();
@@ -187,16 +185,15 @@ public class TelaCadastrarCliente {
         txtWhatsApp = criarCampoTexto("WhatsApp", "(00) 00000-0000");
         txtRua = criarCampoTexto("Rua/Avenida", "Nome da Rua");
 
-        // 3) MELHORIA: Campo de número travado e com texto ajustado!
         txtNumero = criarCampoTexto("Número", "Nº");
         txtNumero.setPrefWidth(90);
-        txtNumero.setMinWidth(90); // Impede de encolher
-        txtNumero.setMaxWidth(90); // Impede de esticar e "vazar"
+        txtNumero.setMinWidth(90);
+        txtNumero.setMaxWidth(90);
 
         txtBairro = criarCampoTexto("Bairro", "Seu Bairro");
 
         HBox linhaEndereco = new HBox(10, txtRua, txtNumero);
-        HBox.setHgrow(txtRua, Priority.ALWAYS); // A rua estica, o número fica fixo
+        HBox.setHgrow(txtRua, Priority.ALWAYS);
 
         txtWhatsApp.textProperty().addListener((obs, oldVal, newVal) -> {
             if (isUpdatingMask) return;
@@ -251,7 +248,6 @@ public class TelaCadastrarCliente {
             boolean emailOk = ValidadorUtil.isEmailGmailValido(txtEmail.getText());
             boolean senhaOk = ValidadorUtil.isSenhaValida(txtSenhaOculta.getText());
             marcarCampoVisual(txtEmail, emailOk);
-            // Pinta a borda da senha corretamente, independente de qual campo está visível
             marcarCampoVisualFormatoSenha(txtSenhaOculta, txtSenhaVisivel, senhaOk);
             valido = emailOk && senhaOk;
         }
@@ -295,7 +291,6 @@ public class TelaCadastrarCliente {
         }
     }
 
-    // Metodo especial para pintar as bordas dos dois campos de senha que estão sobrepostos
     private void marcarCampoVisualFormatoSenha(PasswordField oculto, TextField visivel, boolean valido) {
         String baseStyle = "-fx-pref-height: 45px; -fx-background-radius: 5px; -fx-font-size: 15px; -fx-padding: 0 40 0 10; ";
         String estiloExtra = "";
@@ -325,7 +320,6 @@ public class TelaCadastrarCliente {
             sucesso.setContentText("Conta criada com sucesso! Faça seu login.");
             sucesso.showAndWait();
 
-            // CORREÇÃO: Forçando a transição direta para a Tela de Login
             Stage stage = (Stage) btnProximo.getScene().getWindow();
             stage.setScene(new Scene(new TelaLogin().getLayout(), 1100, 700));
 

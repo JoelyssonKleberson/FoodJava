@@ -187,7 +187,6 @@ public class TelaClienteHome {
         Image imagemFinal = null;
         String imgPath = item.getImagemPath();
 
-        // MÁGICA ATUALIZADA: Proteção contra formato WEBP e imagens corrompidas
         if (imgPath != null && !imgPath.trim().isEmpty()) {
             try {
                 if (imgPath.contains("/")) {
@@ -197,14 +196,14 @@ public class TelaClienteHome {
                 File fileFisico = new File("src/main/resources/images/" + imgPath);
                 if (fileFisico.exists()) {
                     Image tempImg = new Image(fileFisico.toURI().toString());
-                    if (!tempImg.isError()) { // Checa se a imagem abriu com sucesso (não é webp falso)
+                    if (!tempImg.isError()) {
                         imagemFinal = tempImg;
                     }
                 } else {
                     InputStream is = getClass().getResourceAsStream("/images/" + imgPath);
                     if (is != null) {
                         Image tempImg = new Image(is);
-                        if (!tempImg.isError()) { // Proteção extra para o classpath
+                        if (!tempImg.isError()) {
                             imagemFinal = tempImg;
                         }
                     }
@@ -212,7 +211,6 @@ public class TelaClienteHome {
             } catch (Exception ignored) {}
         }
 
-        // Se ainda for nulo (ou deu erro porque era WebP), tenta usar a comida padrão
         if (imagemFinal == null) {
             try {
                 InputStream isPadrao = getClass().getResourceAsStream("/images/comida_padrao.jpg");

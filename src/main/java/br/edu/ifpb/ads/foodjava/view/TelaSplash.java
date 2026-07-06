@@ -38,7 +38,6 @@ public class TelaSplash {
             imgLogo.setEffect(sombraLogo);
 
         } catch (Exception e) {
-            // Fica quieto para não poluir o terminal! O app continua funcionando mesmo sem a logo.
         }
 
         ScaleTransition pulse = new ScaleTransition(Duration.seconds(1.2), imgLogo);

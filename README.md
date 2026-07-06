@@ -1,155 +1,233 @@
-# 🍽️ FoodJava — Sistema de Pedidos para Restaurante
+# 🍽️ FoodJava
 
-> Projeto base para o **Projeto Final** da disciplina de **Programação Orientada a Objetos**  
-> Curso Superior de Análise e Desenvolvimento de Sistemas — IFPB Campus Monteiro
+Sistema de gerenciamento de pedidos para um restaurante desenvolvido como Projeto Final da disciplina de **Programação Orientada a Objetos (POO)** do Curso Superior de Análise e Desenvolvimento de Sistemas do **IFPB – Campus Monteiro**.
 
 ---
 
-## 👥 Equipe
+# 👨‍💻 Integrante
 
 | Nome                               | Matrícula    |
 |------------------------------------|--------------|
 | Joelysson Kleberson Alves Ferreira | 202515020022 |
 
-> ✏️ Atualize esta tabela com os dados reais da equipe.
+---
+
+# 📖 Sobre o Projeto
+
+O FoodJava é uma aplicação desktop desenvolvida em Java que simula o funcionamento de um sistema de pedidos para um restaurante.
+
+O sistema possui dois perfis de usuário: **Gerente** e **Cliente**.
+
+O gerente é responsável por configurar o restaurante, gerenciar o cardápio, importar itens através de arquivos JSON, acompanhar os pedidos recebidos e controlar o andamento de cada pedido.
+
+O cliente pode realizar seu cadastro, efetuar login, visualizar o cardápio organizado por categorias, montar um carrinho de compras, confirmar pedidos e acompanhar seu histórico e o status de cada pedido.
+
+O projeto foi desenvolvido aplicando os principais conceitos de Programação Orientada a Objetos, arquitetura MVC e persistência de dados em arquivos JSON.
 
 ---
 
-## ✅ Pré-requisitos
+# ✨ Funcionalidades
 
-- **Java Development Kit (JDK) 21** ou superior  
-  Verifique com: `java -version`  
-  Download: https://adoptium.net
+## Gerente
 
-- **Maven 3.8+** instalado e disponível no PATH  
-  Verifique com: `mvn -version`  
-  Download: https://maven.apache.org/download.cgi
+* Configuração inicial do restaurante;
+* Login administrativo;
+* Cadastro, edição e exclusão de itens do cardápio;
+* Ativação e desativação de itens;
+* Importação de cardápio através de arquivo JSON;
+* Upload de imagens dos itens;
+* Exibição de imagem padrão para itens sem foto;
+* Visualização de todos os pedidos;
+* Filtro de pedidos por status;
+* Avanço do status dos pedidos;
+* Cancelamento de pedidos conforme as regras de negócio;
+* Visualização do resumo diário de pedidos e faturamento.
 
----
+## Cliente
 
-## 🚀 Como Executar
-
-### 1. Clone o repositório
-
-```bash
-git clone https://gitlab.com/alisson.werner.ifpb/POO.2026.1.git
-cd POO.2026.1
-```
-
----
-
-### 2a. Executar pelo Terminal
-
-```bash
-mvn javafx:run
-```
-
-> Execute sempre a partir da **raiz do projeto** (onde está o `pom.xml`).
+* Auto cadastro;
+* Login no sistema;
+* Visualização do cardápio por categorias;
+* Adição e remoção de itens do carrinho;
+* Confirmação de pedidos;
+* Histórico de pedidos;
+* Acompanhamento do status dos pedidos em tempo real.
 
 ---
 
-### 2b. Executar no Eclipse
+# 🧠 Conceitos de POO Aplicados
 
-1. **File → Import → Maven → Existing Maven Projects** → selecione a pasta do projeto → **Finish**
-2. Aguarde o Eclipse baixar as dependências (barra de progresso no rodapé)
-3. Clique com o botão direito no projeto → **Run As → Maven Build...** (com reticências)
-4. No campo **Goals**, digite: `javafx:run`
-5. Clique em **Run**
+O projeto foi desenvolvido utilizando os principais conceitos estudados na disciplina:
 
-> Nas próximas execuções: botão direito no projeto → **Run As → Maven Build** (sem reticências).
-
----
-
-### 2c. Executar no VS Code
-
-1. Instale a extensão **Extension Pack for Java** (Microsoft)
-2. **File → Open Folder** → selecione a pasta do projeto
-3. Aguarde o VS Code indexar o projeto (barra de progresso no rodapé)
-4. Abra o terminal integrado: **Terminal → New Terminal**
-5. Execute:
-
-```bash
-mvn javafx:run
-```
-
-Alternativamente, use o painel **Maven** na barra lateral → expanda o projeto → **Plugins → javafx → javafx:run** (duplo clique).
+* Encapsulamento;
+* Herança;
+* Polimorfismo;
+* Abstração;
+* Interfaces;
+* Classes Abstratas;
+* Tratamento de Exceções Personalizadas;
+* Arquitetura MVC;
+* Camada Repository;
+* Persistência em JSON.
 
 ---
 
-## 🗂️ Estrutura do Projeto
+# 🛠️ Tecnologias Utilizadas
 
-```
-foodjava/
-├── src/
-│   └── main/
-│       ├── java/
-│       │   └── br/edu/ifpb/ads/foodjava/
-│       │       ├── MainApp.java          ← ponto de entrada da aplicação
-│       │       ├── model/                ← entidades do domínio (Cliente, Pedido, etc.)
-│       │       ├── view/                 ← classes Java que constroem telas via código
-│       │       │                            (alternativa ao FXML quando a tela é gerada
-│       │       │                             programaticamente, sem arquivo externo)
-│       │       ├── controller/           ← controladores das telas
-│       │       ├── repository/           ← leitura e escrita de arquivos JSON
-│       │       ├── exception/            ← exceções personalizadas
-│       │       └── util/                 ← utilitários (validações, hash, etc.)
-│       └── resources/
-│           ├── fxml/                     ← arquivos .fxml criados no SceneBuilder
-│           │                                (definem o layout visual das telas de forma
-│           │                                 declarativa, separada do código Java)
-│           ├── css/                      ← folhas de estilo
-│           ├── images/                   ← imagens estáticas do sistema
-│           └── data/                     ← arquivos JSON gerados em runtime
-├── exemplos-json/
-│   ├── cardapio_exemplo.json             ← exemplo de importação de cardápio
-│   └── imagens/                          ← imagens referenciadas no JSON de exemplo
-├── pom.xml                               ← configuração Maven
+* Java 17+
+* JavaFX
+* Maven
+* Gson
+* JSON
+* Git
+* GitHub
+
+---
+
+# 📂 Estrutura do Projeto
+
+```text
+FoodJava
+├── .idea
+├── exemplos-json
+├── out
+├── src
+│   └── main
+│       ├── java
+│       │   └── br.edu.ifpb.ads.foodjava
+│       │       ├── controller
+│       │       ├── enums
+│       │       ├── exceptions
+│       │       ├── model
+│       │       ├── repository
+│       │       ├── utils
+│       │       ├── view
+│       │       └── MainApp.java
+│       │
+│       └── resources
+│           └── data
+│           └── images
+│               ├── comida_padrao.jpg
+│               ├── fundo_login.jpg
+│               └── logotipo.png
+│
+├── target
+├── pom.xml
 └── README.md
 ```
 
-### `view/` vs `resources/fxml/` — qual a diferença?
+---
 
-No JavaFX existem duas formas de criar uma tela:
+# 💾 Persistência de Dados
 
-- **`resources/fxml/`** — arquivos `.fxml` editados visualmente no **SceneBuilder**. Definem o layout de forma declarativa (como HTML), separando completamente a estrutura visual do código Java. É a abordagem recomendada para a maioria das telas.
+Os dados da aplicação são armazenados em arquivos JSON gerados automaticamente durante a execução do sistema.
 
-- **`view/`** — classes Java que montam a tela via código (ex.: `new Button("Entrar")`). Útil para telas geradas dinamicamente, como listas e cards cujo conteúdo só é conhecido em runtime.
+São persistidos dados como:
 
-Na prática, a maioria dos projetos usa os dois: SceneBuilder para telas fixas e classes Java para componentes dinâmicos.
+* Restaurante;
+* Clientes;
+* Cardápio;
+* Pedidos.
 
 ---
 
-## 🎨 Criando Telas com SceneBuilder
+# ▶️ Executando o Projeto
 
-O **SceneBuilder** é uma ferramenta visual de arrastar e soltar para criar arquivos `.fxml`. Com ele você monta o layout da tela sem escrever código, e o JavaFX carrega o arquivo gerado em runtime.
+## Pré-requisitos
 
-**Download:** https://gluonhq.com/products/scene-builder
+Antes de executar o projeto é necessário possuir instalado:
 
-**Como usar no Eclipse:**
-1. Crie um arquivo `.fxml` em `src/main/resources/fxml/`
-2. Clique com o botão direito no arquivo → **Open with SceneBuilder**
-3. Monte a tela visualmente e salve
-4. No Controller correspondente, carregue com:
+* Java JDK 17 ou superior;
+* Maven 3.8 ou superior.
 
-```java
-FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/NomeDaTela.fxml"));
-Parent root = loader.load();
+Verifique as versões instaladas:
+
+```bash
+java -version
+```
+
+```bash
+mvn -version
 ```
 
 ---
 
-## 📁 Exemplo de Cardápio para Importação
+## Clonando o Repositório
 
-Um arquivo de exemplo está disponível em `exemplos-json/cardapio_exemplo.json`, com 13 itens cobrindo todas as categorias e com imagens de placeholder prontas para teste.
+```bash
+git clone https://github.com/JoelyssonKleberson/FoodJava.git
+```
 
-Categorias válidas: `ENTRADA` · `PRATO_PRINCIPAL` · `SOBREMESA` · `BEBIDAS`
-
----
-
-## 📄 Documentação Completa
-
-A descrição detalhada do projeto — requisitos funcionais, regras de negócio, exceções, arquitetura e critérios de avaliação — está disponível no PDF entregue pelo professor no Google Classroom.
+```bash
+cd FoodJava
+```
 
 ---
 
-*Projeto acadêmico — IFPB Campus Monteiro · 2026.1*
+## Executando pelo Terminal
+
+```bash
+mvn javafx:run
+```
+
+---
+
+## Executando pelo IntelliJ IDEA
+
+1. Abra o projeto.
+2. Aguarde o Maven carregar todas as dependências.
+3. Abra:
+
+```
+Maven
+    Plugins
+        javafx
+            javafx:run
+```
+
+4. Execute **javafx:run** com um duplo clique.
+
+---
+
+# 🖼️ Imagens do Cardápio
+
+O sistema permite adicionar imagens aos itens do cardápio.
+
+Caso seja necessário converter uma imagem para o formato JPG, utilize o site:
+
+https://www.iloveimg.com/pt/converter-para-jpg
+
+Após a conversão, utilize a imagem normalmente durante o cadastro ou importação dos itens.
+
+---
+
+# 📥 Importação de Cardápio
+
+O sistema permite importar itens através de um arquivo JSON seguindo o padrão especificado no projeto.
+
+Um arquivo de exemplo encontra-se na pasta:
+
+```text
+exemplos-json/
+```
+
+Durante a importação, registros válidos são inseridos normalmente enquanto registros inválidos são informados individualmente sem interromper a importação.
+
+---
+
+# 📌 Arquitetura
+
+O projeto segue o padrão arquitetural **MVC (Model-View-Controller)** com uma camada **Repository**, separando as responsabilidades em:
+
+* **Model:** entidades e regras de negócio;
+* **View:** interface gráfica desenvolvida em JavaFX;
+* **Controller:** comunicação entre interface e regras de negócio;
+* **Repository:** persistência dos dados em arquivos JSON;
+* **Util:** classes auxiliares e validações;
+* **Exception:** exceções personalizadas.
+
+---
+
+# 📚 Projeto Acadêmico
+
+Projeto desenvolvido exclusivamente para fins acadêmicos na disciplina de Programação Orientada a Objetos do Instituto Federal da Paraíba - Campus Monteiro (IFPB) .

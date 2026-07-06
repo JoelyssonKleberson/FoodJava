@@ -42,7 +42,6 @@ public class TelaCarrinho {
         telaPrincipal.setStyle("-fx-background-color: " + COR_FUNDO + ";");
         telaPrincipal.setPadding(new Insets(40));
 
-        // BOTÃO VOLTAR
         Button btnVoltar = new Button("⬅ Voltar ao Cardápio");
         btnVoltar.setStyle("-fx-background-color: transparent; -fx-text-fill: " + COR_VERMELHO + "; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-border-color: " + COR_VERMELHO + "; -fx-border-width: 2px; -fx-border-radius: 8px; -fx-padding: 8 15 8 15;");
         btnVoltar.setOnAction(e -> {
@@ -50,7 +49,6 @@ public class TelaCarrinho {
             stage.setScene(new Scene(new TelaClienteHome(clienteLogado).getLayout(), 1100, 700));
         });
 
-        // NOVO: BOTÃO LIMPAR CARRINHO
         Button btnLimpar = new Button("🗑 Limpar Carrinho");
         btnLimpar.setStyle("-fx-background-color: transparent; -fx-text-fill: #e74c3c; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-border-color: #e74c3c; -fx-border-width: 2px; -fx-border-radius: 8px; -fx-padding: 8 15 8 15;");
         btnLimpar.setOnAction(e -> {

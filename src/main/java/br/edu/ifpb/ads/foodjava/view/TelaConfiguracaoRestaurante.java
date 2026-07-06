@@ -33,10 +33,9 @@ public class TelaConfiguracaoRestaurante {
     private Label lblEtapa;
     private Button btnProximo, btnVoltar;
 
-    // Campos
     private TextField txtNomeRestaurante, txtCnpj, txtWhatsApp, txtRua, txtNumero, txtBairro, txtEmail;
     private ComboBox<String> cbCategoria;
-    private TextField txtCategoriaOutros; // Novo campo para "Outros"
+    private TextField txtCategoriaOutros;
     private PasswordField txtSenhaOculta;
     private TextField txtSenhaVisivel;
 
@@ -90,7 +89,6 @@ public class TelaConfiguracaoRestaurante {
         boxProgresso.setAlignment(Pos.CENTER);
         boxProgresso.setPadding(new Insets(10, 0, 5, 0));
 
-        // IMPLEMENTAÇÃO DO BOTÃO VOLTAR
         btnVoltar = new Button("Voltar");
         btnVoltar.setStyle("-fx-background-color: transparent; -fx-text-fill: #7f8c8d; -fx-font-weight: bold; -fx-cursor: hand; -fx-font-size: 15px;");
 
@@ -138,10 +136,9 @@ public class TelaConfiguracaoRestaurante {
         cbCategoria.setStyle("-fx-pref-height: 45px; -fx-background-radius: 5px; -fx-font-size: 15px; -fx-border-color: #e0e0e0; -fx-border-radius: 5px;");
         cbCategoria.setMaxWidth(Double.MAX_VALUE);
 
-        // IMPLEMENTAÇÃO: Campo dinâmico para categoria "Outros"
         txtCategoriaOutros = criarCampoTexto("Qual categoria?", "Ex: Italiana");
         txtCategoriaOutros.setVisible(false);
-        txtCategoriaOutros.setManaged(false); // Remove do layout se invisível
+        txtCategoriaOutros.setManaged(false);
 
         cbCategoria.valueProperty().addListener((obs, oldV, newV) -> {
             boolean isOutros = "Outros".equals(newV);
@@ -150,7 +147,6 @@ public class TelaConfiguracaoRestaurante {
             validarPassoAtual();
         });
 
-        // Máscara CNPJ
         txtCnpj.textProperty().addListener((obs, oldVal, newVal) -> {
             if (isUpdatingMask) return;
             isUpdatingMask = true;
@@ -260,7 +256,6 @@ public class TelaConfiguracaoRestaurante {
         lblEtapa.setText("Etapa " + passoAtual + " de 3");
         progressBar.setProgress(passoAtual / 3.0);
 
-        // Oculta o botão voltar se estiver na primeira etapa
         btnVoltar.setVisible(passoAtual > 1);
 
         if (passoAtual == 3) {
@@ -278,7 +273,6 @@ public class TelaConfiguracaoRestaurante {
             boolean nomeOk = !txtNomeRestaurante.getText().trim().isEmpty();
             boolean cnpjOk = ValidadorUtil.isCnpjValido(txtCnpj.getText());
 
-            // Valida se selecionou a combo, e se selecionou "Outros", o campo texto não pode ser vazio
             boolean catOk = cbCategoria.getValue() != null &&
                     (!"Outros".equals(cbCategoria.getValue()) || !txtCategoriaOutros.getText().trim().isEmpty());
 
@@ -347,7 +341,6 @@ public class TelaConfiguracaoRestaurante {
             String cnpjLimpo = txtCnpj.getText().replaceAll("\\D", "");
             String endereco = txtRua.getText() + ", " + txtNumero.getText() + " - " + txtBairro.getText();
 
-            // Pega a categoria (Se for "Outros", usa o texto digitado)
             String categoriaEscolhida = cbCategoria.getValue();
             if ("Outros".equals(categoriaEscolhida)) {
                 categoriaEscolhida = txtCategoriaOutros.getText().trim();

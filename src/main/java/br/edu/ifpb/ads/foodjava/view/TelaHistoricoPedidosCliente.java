@@ -8,7 +8,6 @@ import br.edu.ifpb.ads.foodjava.model.Pedido;
 import br.edu.ifpb.ads.foodjava.model.Usuario;
 import br.edu.ifpb.ads.foodjava.repository.PedidoRepositoryJsonImpl;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
@@ -44,7 +43,6 @@ public class TelaHistoricoPedidosCliente {
             stage.setScene(new Scene(new TelaClienteHome(clienteLogado).getLayout(), 1100, 700));
         });
 
-        // CORREÇÃO: Botão Limpar lê diretamente a "etiqueta" ID do cartão agora
         Button btnLimparHistorico = new Button("🧹 Ocultar Finalizados");
         btnLimparHistorico.setStyle("-fx-background-color: transparent; -fx-text-fill: #7f8c8d; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-border-color: #7f8c8d; -fx-border-width: 2px; -fx-border-radius: 8px; -fx-padding: 8 15 8 15;");
         btnLimparHistorico.setOnAction(e -> {
@@ -96,7 +94,6 @@ public class TelaHistoricoPedidosCliente {
     private VBox criarCartaoPedido(Pedido p) {
         VBox cartao = new VBox(10);
 
-        // CORREÇÃO: A etiqueta invisível que o botão "Ocultar" vai ler
         cartao.setId(p.getStatus().name());
 
         cartao.setPadding(new Insets(20));
