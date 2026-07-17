@@ -19,7 +19,7 @@ public class CardapioRepositoryJsonImpl implements CardapioRepository {
 
     private final Gson gson;
     private List<ItemCardapio> itens;
-    private static final String FILE_PATH = "src/main/resources/data/cardapio.json";
+    private static final String FILE_PATH = "data/cardapio.json";
 
     public CardapioRepositoryJsonImpl() {
         gson = new GsonBuilder().setPrettyPrinting().create();

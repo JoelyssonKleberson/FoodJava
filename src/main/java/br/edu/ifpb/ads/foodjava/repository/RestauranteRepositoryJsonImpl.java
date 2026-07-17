@@ -13,7 +13,7 @@ import java.io.Writer;
 public class RestauranteRepositoryJsonImpl implements RestauranteRepository {
 
     private final Gson gson;
-    private static final String FILE_PATH = "src/main/resources/data/restaurante.json";
+    private static final String FILE_PATH = "data/restaurante.json";
 
     public RestauranteRepositoryJsonImpl() {
         gson = new GsonBuilder().setPrettyPrinting().create();

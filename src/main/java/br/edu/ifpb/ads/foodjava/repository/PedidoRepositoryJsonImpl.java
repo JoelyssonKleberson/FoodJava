@@ -20,7 +20,7 @@ public class PedidoRepositoryJsonImpl implements PedidoRepository {
 
     private final Gson gson;
     private List<Pedido> pedidos;
-    private static final String FILE_PATH = "src/main/resources/data/pedidos.json";
+    private static final String FILE_PATH = "data/pedidos.json";
 
     public PedidoRepositoryJsonImpl() {
         gson = new GsonBuilder()

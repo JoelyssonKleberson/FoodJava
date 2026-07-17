@@ -22,8 +22,8 @@ public class UsuarioRepositoryJsonImpl implements UsuarioRepository {
     private List<Cliente> clientes;
     private List<Gerente> gerentes;
 
-    private static final String FILE_PATH_CLIENTES = "src/main/resources/data/clientes.json";
-    private static final String FILE_PATH_GERENTES = "src/main/resources/data/gerentes.json";
+    private static final String FILE_PATH_CLIENTES = "data/clientes.json";
+    private static final String FILE_PATH_GERENTES = "data/gerentes.json";
 
     public UsuarioRepositoryJsonImpl() {
         gson = new GsonBuilder().setPrettyPrinting().create();
