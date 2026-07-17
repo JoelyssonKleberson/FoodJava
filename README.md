@@ -90,7 +90,6 @@ O projeto foi desenvolvido utilizando os principais conceitos estudados na disci
 FoodJava
 ├── .idea
 ├── exemplos-json
-├── out
 ├── src
 │   └── main
 │       ├── java
@@ -105,7 +104,6 @@ FoodJava
 │       │       └── MainApp.java
 │       │
 │       └── resources
-│           └── data
 │           └── images
 │               ├── comida_padrao.jpg
 │               ├── fundo_login.jpg
