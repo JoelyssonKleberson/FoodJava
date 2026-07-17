@@ -5,10 +5,17 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import java.io.File;
+
 public class MainApp extends Application {
 
     @Override
     public void start(Stage stage) {
+        File dataPath = new File("data/imagens_pratos");
+        if (!dataPath.exists()) {
+            dataPath.mkdirs();
+        }
+
         TelaSplash splashView = new TelaSplash();
         Scene cenaInicial = new Scene(splashView.getLayout(), 1100, 700);
 
