@@ -193,7 +193,7 @@ public class TelaClienteHome {
                     imgPath = imgPath.substring(imgPath.lastIndexOf("/") + 1);
                 }
 
-                File fileFisico = new File("src/main/resources/images/" + imgPath);
+                File fileFisico = new File("data/imagens_pratos/" + imgPath);
                 if (fileFisico.exists()) {
                     Image tempImg = new Image(fileFisico.toURI().toString());
                     if (!tempImg.isError()) {
